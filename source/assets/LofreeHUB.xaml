@@ -1,0 +1,14 @@
+<DrawingImage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+ <DrawingImage.Drawing>
+  <DrawingGroup>
+   <GeometryDrawing Geometry="M 60,8 L 196,8 Q 248,8 248,60 L 248,196 Q 248,248 196,248 L 60,248 Q 8,248 8,196 L 8,60 Q 8,8 60,8 Z">
+    <GeometryDrawing.Brush><LinearGradientBrush StartPoint="0,1" EndPoint="1,0"><GradientStop Color="#101827" Offset="0"/><GradientStop Color="#252C53" Offset="0.58"/><GradientStop Color="#655FB1" Offset="1"/></LinearGradientBrush></GeometryDrawing.Brush>
+   </GeometryDrawing>
+   <GeometryDrawing Brush="#12192F" Geometry="M 58,76 L 198,76 Q 214,76 214,92 L 214,172 Q 214,188 198,188 L 58,188 Q 42,188 42,172 L 42,92 Q 42,76 58,76 Z">
+    <GeometryDrawing.Pen><Pen Brush="#EFF0FF" Thickness="4"/></GeometryDrawing.Pen>
+   </GeometryDrawing>
+   <GeometryDrawing Brush="#F1F0FF" Geometry="M 58,96 H 78 V 112 H 58 Z M 88,96 H 108 V 112 H 88 Z M 118,96 H 138 V 112 H 118 Z M 148,96 H 168 V 112 H 148 Z M 178,96 H 198 V 112 H 178 Z M 58,124 H 78 V 140 H 58 Z M 88,124 H 108 V 140 H 88 Z M 118,124 H 138 V 140 H 118 Z M 148,124 H 168 V 140 H 148 Z M 178,124 H 198 V 140 H 178 Z M 58,152 H 78 V 168 H 58 Z M 88,152 H 168 V 168 H 88 Z M 178,152 H 198 V 168 H 178 Z"/>
+   <GeometryDrawing Brush="#D3CCFF"><GeometryDrawing.Geometry><EllipseGeometry Center="192,59" RadiusX="5" RadiusY="5"/></GeometryDrawing.Geometry></GeometryDrawing>
+  </DrawingGroup>
+ </DrawingImage.Drawing>
+</DrawingImage>

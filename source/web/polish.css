@@ -1,0 +1,21 @@
+.device-header.connection-row{min-height:38px;margin:0 0 23px;padding:0;gap:16px;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none}
+.device-header .connection-label{gap:11px;flex:1;min-width:0}
+.device-identity{display:flex;align-items:baseline;gap:13px;min-width:0}
+.device-header h1{margin:0;font:400 25px/38px Manrope,Pretendard,sans-serif;letter-spacing:-.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pageContext{font-size:13px;line-height:1.5;white-space:nowrap;color:#c4cbe1}
+.device-header .connection-tools{flex-wrap:nowrap;gap:11px;flex-shrink:0}
+.device-header #refresh{width:38px;height:38px;min-height:38px;padding:9px}
+.device-header #refresh svg{width:19px;height:19px}
+.device-header .status-dot{width:6px;height:6px}
+.dot-readout{pointer-events:none}
+.dot-readout svg{filter:none;overflow:visible}
+.dot-halo{fill:#dbe3ff;opacity:0;filter:blur(.8px);transition:opacity 300ms cubic-bezier(.3,0,.2,1)}
+.dot-core{fill:currentColor}
+.tick-lights{stroke:#dce4ff;filter:blur(.65px);opacity:0;animation:none!important;transition:opacity 300ms cubic-bezier(.3,0,.2,1)}
+.tick-lights>line{stroke-width:2px}
+[data-glow-block]:is([data-glow-hover],:has(:focus-visible),:has(.is-dragging)) .dot-halo{opacity:.72}
+[data-glow-block]:is([data-glow-hover],:has(:focus-visible),:has(.is-dragging)) .tick-lights{opacity:.46}
+[data-glow-block][data-glow-hover] .dial-ticks>line,[data-glow-block][data-glow-hover] .ruler-ticks>line{stroke:#fff}
+@media(max-width:1160px){.device-header h1{font-size:23px}.device-identity{gap:10px}.device-header .connection-tools{gap:8px}#pageContext{font-size:12px}}
+@media(max-height:800px){.device-header.connection-row{margin-bottom:18px}}
+@media(prefers-reduced-motion:reduce){.dot-halo,.tick-lights{transition:none!important}}

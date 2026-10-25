@@ -1,0 +1,10 @@
+Lofree logo
+
+Official website: https://www.lofree.co/
+Header image: https://www.lofree.co/cdn/shop/files/lofree_logo_black.png?v=1710760376&width=200
+Retrieved: 2026-10-25
+
+The original PNG is included for the Lofree logo requested by the user. CSS inverts
+its color for the dark interface. The logo and trademark remain the property of
+their original rights holder. No open-source license or transfer of rights to the
+logo is asserted by this project.

@@ -1,0 +1,9 @@
+Lofree Hyzen product image
+
+Source: https://hyzen.lofree.tech/deviceImage/oe930.webp
+Official driver: https://hyzen.lofree.tech/#/
+Retrieved: 2026-10-25
+
+This original WebP is included for the product illustration requested by the user.
+The product image remains the property of its original rights holder. No open-source
+license or transfer of image rights is asserted by this project.

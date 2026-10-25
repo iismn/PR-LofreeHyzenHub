@@ -1,0 +1,16 @@
+/.build/
+/build/
+/dist/
+/.vs/
+/.vscode/
+*.pdb
+*.log
+*.tmp
+*.user
+*.suo
+__pycache__/
+*.pyc
+/LofreeHUB.exe
+/LofreeHUB-*.zip
+installation-result.json
+branding-verification.json

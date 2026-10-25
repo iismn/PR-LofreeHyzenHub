@@ -1,0 +1,15 @@
+.dial-face,.ruler-wrap{isolation:isolate}
+.dial-face:before,.ruler-wrap:before{content:none}
+.dial-face>.instrument-visual,.ruler-wrap>.instrument-visual{z-index:1}
+.dial-readout{z-index:2}
+/* Each light stroke has the exact endpoints of its corresponding tick. */
+.tick-lights{pointer-events:none;stroke:#dbe1ff;opacity:0;filter:blur(1.15px);transition:opacity .2s ease}
+.tick-lights>line{stroke-width:4px;stroke-linecap:round}
+.dial-ticks>line,.ruler-ticks>line{transition:stroke .18s ease,stroke-opacity .18s ease}
+.dial-face:is(:hover,.instrument-hover,.is-dragging):not(:has(input:disabled)) .dial-ticks>line,.ruler-wrap:is(:hover,.instrument-hover,.is-dragging):not(:has(input:disabled)) .ruler-ticks>line{stroke:#fff}
+.instrument-handle,.instrument-dot{transition:filter .18s ease,stroke .18s ease,fill .18s ease}
+.dial-face:is(.is-dragging,.is-snapping) .instrument-dot,.ruler-wrap:is(.is-dragging,.is-snapping) .instrument-dot{filter:drop-shadow(0 0 3px #eef0ffb3)}
+.dial-face.is-snapping .instrument-handle,.ruler-wrap.is-snapping .instrument-handle{animation:instrument-detent .26s ease-out both}
+@keyframes tick-neon{0%,100%{opacity:.65}50%{opacity:.95}}
+@keyframes instrument-detent{0%{stroke:#e7eaffcc;fill:#e3e6ff33}100%{stroke:#e8ecff6e;fill:#d8e0ff17}}
+@media(prefers-reduced-motion:reduce){.tick-lights,.dial-ticks>line,.ruler-ticks>line,.instrument-handle,.instrument-dot{animation:none!important;transition:none!important}}
