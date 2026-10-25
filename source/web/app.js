@@ -1,11 +1,12 @@
 'use strict';
+const L=HyzenLocale,t=value=>L.text(value);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],P=HyzenProtocol,C=HYZEN_CONFIG,I=HyzenInstruments;
 const paths={home:'M3 10 12 3l9 7v10H3Z M9 20v-7h6v7',keyboard:'M3 5h18v14H3Z M6 9h1m3 0h1m3 0h1m3 0h0M6 12h1m3 0h1m3 0h1m3 0h0M7 16h10',depth:'M5 3v18M19 3v18M3 7h4m-4 10h4M10 5h4v10h-4Z M12 18v3m-2-2 2 2 2-2',advanced:'M4 7h16M7 4v6M4 17h16M17 14v6',light:'M9 18h6m-5 3h4M8 13a6 6 0 1 1 8 0l-1 2H9ZM12 1v1',test:'M4 4h16v16H4Z M8 12l3 3 6-7',calibration:'M5 3v18M12 3v18M19 3v18M3 8h4m3 7h4m3-8h4',settings:'M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',help:'M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3m0 3h0 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',macro:'M8 4 4 8l4 4M4 8h12a4 4 0 0 1 0 8h-5m1-4-4 4 4 4',refresh:'M20 7v5h-5M4 17v-5h5M19 12a7 7 0 0 0-12-5M5 12a7 7 0 0 0 12 5',arrow:'M4 12h16m-6-6 6 6-6 6',moon:'M20 15A9 9 0 0 1 9 3a9 9 0 1 0 11 12',sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1',link:'M9 8 7 8a4 4 0 0 0 0 8h3m5-8h2a4 4 0 0 1 0 8h-3M8 12h8',check:'M5 12l4 4L19 6'};
 const icon=name=>`<i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="${paths[name]||paths.keyboard}"/></svg></i>`;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=s=>t(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nav=[['home','키보드'],['keyboard','키 매핑'],['depth','입력 깊이'],['advanced','고급 키'],['light','조명'],['macro','매크로'],['test','키 테스트'],['calibration','보정'],['settings','일반'],['help','도움말']];
 const state={page:'home',busy:false,connectionPhase:'idle',selected:new Set(),layer:-1,category:'basic',binding:[32,0,4],advanced:'MT',lightGroup:'back',lightDraft:null,macroSlot:0,macroDraft:null,recording:false,recordLast:0,testLog:[],pressed:new Set(),visited:new Set(),testCount:0,lastEvent:0,confirm:null,error:null};
-let serial=0,pending=new Map(),toastTimer;
+let serial=0,pending=new Map(),toastTimer,toastMessage;
 function rpc(action,args={}){return new Promise((resolve,reject)=>{const id=++serial,t=setTimeout(()=>{pending.delete(id);reject(Error('장치 요청 시간이 초과되었습니다. 다시 연결하세요.'));},30000);pending.set(id,{resolve,reject,t});if(!window.chrome?.webview){clearTimeout(t);pending.delete(id);reject(Error('Windows용 LofreeHUB.exe에서 실행하세요.'));return;}chrome.webview.postMessage({id,action,...args});});}
 window.chrome?.webview?.addEventListener('message',e=>{const p=pending.get(e.data.id);if(p){pending.delete(e.data.id);clearTimeout(p.t);e.data.error?p.reject(Error(e.data.error)):p.resolve(e.data.result);}});
 const device=new P.Hyzen(rpc,HYZEN_CURVE);
@@ -15,16 +16,16 @@ const catalogue=HYZEN_KEYS.map(k=>({label:k.keyName,code:keyCode(k),event:k.code
 const paletteLabels={Wireless24g:'2.4GHz 전환',Calc:'계산기',VolDown:'볼륨 −',VolUp:'볼륨 +',Mute:'음소거',Bt1:'Bluetooth 1',Bt2:'Bluetooth 2',Bt3:'Bluetooth 3',Prev:'이전 곡',Next:'다음 곡',Refresh:'새로고침',Search:'검색',Stop:'로딩 중지',Back:'뒤로',Fwd:'앞으로',Pc:'내 PC',Player:'미디어 플레이어',Mail:'메일',Pause:'재생 / 일시정지',Home:'홈페이지',IncreaseScreenBrightness:'화면 밝기 +',ReduceScreenBrightness:'화면 밝기 −',winScreenshot:'Windows 캡처',macScreenshot:'macOS 캡처',winTab:'Windows 창 전환',macTab:'macOS 창 전환',leftClick:'왼쪽 클릭',rightClick:'오른쪽 클릭',middleClick:'가운데 클릭',back:'마우스 뒤로',forward:'마우스 앞으로',scrollUp:'휠 위',scrollDown:'휠 아래',switchMechanicalMagneticAxis:'스위치 모드 전환',openWeb:'공식 웹페이지',Wins:'Windows 모드',Macs:'macOS 모드',Backslash:'백슬래시',BacklightToggle:'백라이트 켜기 / 끄기',BacklightModeSwitch:'백라이트 효과',BacklightColor:'백라이트 색상',BacklightBrightnessDown:'백라이트 밝기 −',BacklightBrightnessUp:'백라이트 밝기 +',BacklightSpeedDown:'백라이트 속도 −',BacklightSpeedUp:'백라이트 속도 +',switchbackLightLuminance:'백라이트 속도 순환',FrontlightToggle:'라이트 바 켜기 / 끄기',FrontlightModeSwitch:'라이트 바 효과',FrontlightColorSwitch:'라이트 바 색상',FrontlightBrightnessDown:'라이트 바 밝기 −',FrontlightBrightnessUp:'라이트 바 밝기 +',FrontlightSpeedDown:'라이트 바 속도 −',FrontlightSpeedUp:'라이트 바 속도 +',switchFrontlightLuminance:'라이트 바 속도 순환',ReceiverBrightnessDown:'수신기 밝기 −',ReceiverBrightnessUp:'수신기 밝기 +',DownDongleSpeed:'수신기 속도 −',UpDongleSpeed:'수신기 속도 +',switchDongleSpeed:'수신기 속도 순환',SwitchDongleLightmode:'수신기 조명 효과',SwitchDongleLightColor:'수신기 색상',LightsAllOff:'전체 조명 끄기'};
 const palettes=Object.fromEntries(Object.entries(HYZEN_PALETTES).map(([group,list])=>[group,list.map(k=>{const key=k.tooltipKey.split('.').pop(),label=paletteLabels[key]||(/^profile[1-7]$/.test(key)?'프로필 '+key.slice(-1):key.replace(/^shortcut/,'').replace(/(Ctrl|Win)([A-Z])/,'$1 + $2'));return{label,code:P.bytes(k.keyCode)};})]));
 const extras=[...palettes.media,...palettes.light,...palettes.special,{label:'비활성',code:[0,0,0]}];
-function labelFor(code){const h=P.hex(code),known=[...catalogue,...extras].find(k=>P.hex(k.code)===h);if(known)return known.label;if(code[0]===0x70||code[0]===0x71)return 'M'+(code[1]+1);if(code[0]===0xa0)return 'FN';return h||'—';}
+function labelFor(code){const h=P.hex(code),known=[...catalogue,...extras].find(k=>P.hex(k.code)===h);if(known)return t(known.label);if(code[0]===0x70||code[0]===0x71)return 'M'+(code[1]+1);if(code[0]===0xa0)return 'FN';return h||'—';}
 function firstSelected(){return [...state.selected][0]??-1;}
 function nameForIndex(i){const code=device.defaults?.slice(i*3,i*3+3);return code?labelFor(code):'—';}
-function toast(message){$('#toast').textContent=message;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,5500);}
+function toast(message){toastMessage=message;$('#toast').textContent=t(message);$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,5500);}
 function showError(error){
  state.error=error.message;
  if(isLanding()||!device.connected){setVisibleScreen('landing');setConnectionPhase('error',error.message);}
- else{$('#notice').textContent=error.message;$('#notice').hidden=false;toast(error.message);}
+ else{$('#notice').textContent=t(error.message);$('#notice').hidden=false;toast(error.message);}
 }
-function confirmAction(title,text){return new Promise(resolve=>{state.confirm=resolve;$('#confirmTitle').textContent=title;$('#confirmText').textContent=text;$('#confirmDialog').showModal();});}
+function confirmAction(title,text){return new Promise(resolve=>{state.confirm=resolve;$('#confirmTitle').textContent=t(title);$('#confirmText').textContent=t(text);$('#confirmDialog').showModal();});}
 function checkDevice(){if(!device.connected)throw Error('키보드를 먼저 연결하세요.');}
 function setBusy(b){state.busy=b;document.body.classList.toggle('busy',b);for(const el of $$('button,input,select'))if(!el.closest('#caption')&&!el.closest('#nav')&&!el.closest('#confirmDialog')&&el.id!=='officialLink'){if(b){el.dataset.wasDisabled=el.disabled?'1':'0';el.disabled=true;}else if(el.dataset.wasDisabled!==undefined){el.disabled=el.dataset.wasDisabled==='1';delete el.dataset.wasDisabled;}}}
 async function work(fn,message){
@@ -34,18 +35,47 @@ async function work(fn,message){
  catch(error){showError(error);}
  finally{setBusy(false);updateConnection();if(isLanding())$('#startConnect').focus({preventScroll:true});}
 }
-function updateConnection(){const on=device.connected;$('#statusDot').classList.toggle('online',on);$('#pageTitle').textContent=on?device.info.name.replace(/@Lofree$/i,'').trim():'Lofree HYZEN';$('#pageContext').textContent=state.page==='home'?'':nav.find(item=>item[0]===state.page)?.[1]||'';$('#pageContext').hidden=state.page==='home';$('#deviceStatus').textContent=on?'연결됨':'USB 케이블 또는 2.4GHz 수신기를 연결하세요';$('#connectionType').textContent=on?device.info.connection:'연결 대기';$('#connect').textContent=on?'다시 연결':'연결';$('#profileSelect').disabled=!on||state.busy;$('#profileSelect').value=String(device.profile);}
-
+function updateConnection(){
+ const on=device.connected;$('#statusDot').classList.toggle('online',on);
+ $('#pageTitle').textContent=on?device.info.name.replace(/@Lofree$/i,'').trim():'Lofree HYZEN';
+ $('#pageContext').textContent=state.page==='home'?'':t(nav.find(item=>item[0]===state.page)?.[1]||'');$('#pageContext').hidden=state.page==='home';
+ $('#deviceStatus').textContent=t(on?'연결됨':'USB 케이블 또는 2.4GHz 수신기를 연결하세요');
+ $('#connectionType').textContent=on?device.info.connection:t('연결 대기');$('#connect').textContent=t(on?'다시 연결':'연결');
+ $('#profileSelect').disabled=!on||state.busy;$('#profileSelect').value=String(device.profile);
+}
+function refreshLocale(){
+ document.documentElement.lang=L.language;
+ for(const root of [$('#caption'),$('#nav'),$('#connection'),$('#officialLink'),$('#retryApply'),$('#confirmDialog')])L.localize(root);
+ for(const [id,title]of nav)$('#nav [data-page="'+id+'"] span').textContent=t(title);
+ $('#profileSelect').innerHTML=Array.from({length:7},(_,i)=>option(i,'프로필 '+String(i+1).padStart(2,'0'),device.profile)).join('');
+ $('#connectVisual').innerHTML=L.html(previewKeyboard());
+ setConnectionPhase(state.connectionPhase,state.connectionMessage||'');updateConnection();
+ if(state.error)$('#notice').textContent=t(state.error);
+ if(toastMessage&&!$('#toast').hidden)$('#toast').textContent=t(toastMessage);
+ HyzenPageMotion.setActive(state.page,false);
+}
+async function switchLanguage(language){
+ if(language===L.language)return;
+ const fields=$$('#content input[id],#content select[id]').map(element=>({id:element.id,value:element.value,checked:element.checked,invalid:element.getAttribute('aria-invalid'),invalidClass:element.classList.contains('live-invalid')}));
+ const priorValidation=validationError;
+ await rpc('preferences',{language});
+ const scroll=$('main').scrollTop,folds=$$('#content details').map(details=>details.open);
+ L.setLanguage(language);refreshLocale();render();
+ for(const saved of fields){const element=$('#'+saved.id);if(!element)continue;element.value=saved.value;if(typeof saved.checked==='boolean')element.checked=saved.checked;element.classList.toggle('live-invalid',saved.invalidClass);if(saved.invalid===null)element.removeAttribute('aria-invalid');else element.setAttribute('aria-invalid',saved.invalid);}
+ validationError=priorValidation;syncInstruments();liveState(lastLiveState);
+ $$('#content details').forEach((details,index)=>details.open=folds[index]||false);
+ $('main').scrollTop=scroll;$('#content [data-language="'+language+'"]').focus({preventScroll:true});
+}
 function previewKeyboard(){
  return '<div class="keyboard product-visual"><img id="productPreview" src="hyzen-product.webp" alt="Lofree Hyzen 67 — 투명 키캡과 금속 하우징" width="3335" height="1400" draggable="false"></div>';
 }
 function isLanding(){return document.body.dataset.screen==='landing';}
 function setConnectionPhase(phase,message=''){
- state.connectionPhase=phase;$('#connectScreen').dataset.phase=phase;
+ state.connectionPhase=phase;state.connectionMessage=message;$('#connectScreen').dataset.phase=phase;
  const waiting=phase==='opening'||phase==='reading';
- $('#startConnectLabel').textContent=waiting?'연결 중':phase==='ready'?'연결됨':phase==='error'?'다시 시도':'연결';
+ $('#startConnectLabel').textContent=t(waiting?'연결 중':phase==='ready'?'연결됨':phase==='error'?'다시 시도':'연결');
  $('#connectMark').innerHTML=waiting?'<span class="connect-spinner"></span>':icon(phase==='ready'?'check':'link');
- $('#connectStatus').textContent=phase==='opening'?'키보드를 찾는 중…':phase==='reading'?'설정을 읽는 중…':phase==='ready'?'연결되었습니다.':message;
+ $('#connectStatus').textContent=t(phase==='opening'?'키보드를 찾는 중…':phase==='reading'?'설정을 읽는 중…':phase==='ready'?'연결되었습니다.':message);
  $('#connectStatus').setAttribute('role',phase==='error'?'alert':'status');
  $('#connectScreen').setAttribute('aria-busy',String(waiting));
 }
@@ -88,10 +118,12 @@ function eventForCode(code){return catalogue.find(k=>P.hex(k.code)===code)?.even
 function option(value,label,current){return `<option value="${esc(value)}" ${String(value)===String(current)?'selected':''}>${esc(label)}</option>`;}
 function keyOptions(current='20 00 04'){return [...catalogue,...extras].map(k=>option(P.hex(k.code),k.label,current)).join('');}
 function range(id,label,value,min,max,step,unit){
+ label=t(label);unit=t(unit);
  const fixed=Number(value).toFixed(step<1?2:0);
  return `<div class="range-control ruler-control" data-instrument="ruler"><div class="range-heading"><label for="${id}">${label}</label><span class="range-value"><output for="${id}" id="${id}Value" aria-label="${fixed} ${unit}">${dotNumber(fixed)}</output><small>${unit}</small></span></div><div class="ruler-wrap" data-ruler-for="${id}"><div class="instrument-visual">${I.ruler(value,min,max)}</div><input id="${id}" class="ruler-input" data-unit="${unit}" type="range" min="${min}" max="${max}" step="${step}" value="${value}" aria-valuetext="${fixed} ${unit}"></div><div class="range-labels"><span>${min} ${unit}</span><span>${max} ${unit}</span></div></div>`;
 }
 function dialRange(id,label,value,min,max,step,unit){
+ label=t(label);unit=t(unit);
  const fixed=Number(value).toFixed(step<1?2:0);
  return '<div class="range-control dial-control" data-instrument="dial"><div class="dial-face" data-dial-for="'+id+'"><div class="instrument-visual">'+I.dial(value,min,max)+'</div><div class="dial-readout"><div class="dial-value"><output for="'+id+'" id="'+id+'Value" aria-label="'+fixed+' '+unit+'">'+dotNumber(fixed)+'</output><small>'+unit+'</small></div><label for="'+id+'" class="dial-label">'+label+'</label></div><input id="'+id+'" class="dial-input" data-unit="'+unit+'" type="range" min="'+min+'" max="'+max+'" step="'+step+'" value="'+value+'" aria-valuetext="'+fixed+' '+unit+'"></div><div class="range-labels dial-labels"><span>'+min+' '+unit+'</span><span>'+max+' '+unit+'</span></div></div>';
 }
@@ -119,7 +151,7 @@ function home(){
  ];
  return keyboard(false)+'<div class="stats">'+stats.map(([ic,label,value,unit,foot])=>'<article class="card stat"><div class="stat-label">'+icon(ic)+label+'</div><div class="stat-value">'+value+(unit?'<small>'+unit+'</small>':'')+'</div>'+(foot?'<div class="stat-foot">'+foot+'</div>':'')+'</article>').join('')+'</div>';
 }
-function keymap(){const list=state.category==='basic'?catalogue:state.category==='media'?palettes.media:state.category==='lightkeys'?palettes.light:state.category==='special'?[...palettes.special,{label:'비활성',code:[0,0,0]}]:state.category==='macro'?Array.from({length:28},(_,i)=>{const m=device.cache.macros?.[i];return{label:'M'+(i+1),code:[m?.mode?0x70:0x71,i,m?.mode||m?.loops||1]};}):[];const i=firstSelected(),current=i<0?'—':labelFor(device.binding(i,state.layer));return keyboard()+`<article class="card"><div class="section-heading"><h2>동작 지정</h2><select id="layerSelect" aria-label="편집할 레이어">${[[-1,'기본 레이어'],[0,'Windows · Fn'],[2,'Windows · Fn + Shift'],[1,'macOS · Fn'],[3,'macOS · Fn + Shift']].map(([v,l])=>option(v,l,state.layer)).join('')}</select></div><div class="editor-grid"><div><div class="pill-tabs">${[['basic','기본 키'],['media','미디어'],['lightkeys','조명 키'],['special','특수 · 마우스'],['macro','매크로']].map(([id,title])=>`<button data-category="${id}" class="${id===state.category?'active':''}">${title}</button>`).join('')}</div><div class="binding-keys">${list.map(k=>`<button data-binding="${P.hex(k.code)}" title="${esc(k.label)}" class="${P.hex(k.code)===P.hex(state.binding)?'chosen':''}">${esc(k.label)}</button>`).join('')}</div></div><div><p class="small muted">현재 동작: ${esc(current)}</p><div class="binding-preview"><span class="big-key">${esc(i<0?'선택':nameForIndex(i))}</span>${icon('arrow')}<span class="big-key" id="bindingTarget">${esc(labelFor(state.binding))}</span></div><label class="small muted" for="modifierSelect">보조키 조합</label><select id="modifierSelect" aria-label="보조키 조합">${[[0,'없음'],[1,'Ctrl'],[2,'Shift'],[4,'Alt'],[8,'Win'],[3,'Ctrl + Shift'],[5,'Ctrl + Alt'],[6,'Alt + Shift'],[9,'Win + Ctrl'],[10,'Win + Shift'],[16,'오른쪽 Ctrl'],[32,'오른쪽 Shift'],[64,'오른쪽 Alt'],[128,'오른쪽 Win'],[160,'오른쪽 Win + Shift']].map(([v,l])=>option(v,l,state.binding[0]===32&&state.binding[2]?state.binding[1]:0)).join('')}</select></div></div>${actionRow('saveMap','선택한 키에 저장','Fn 레이어는 키보드 전체에서 공유합니다. 기본 레이어는 현재 프로필에 저장됩니다.')}</article>`;}
+function keymap(){const list=state.category==='basic'?catalogue:state.category==='media'?palettes.media:state.category==='lightkeys'?palettes.light:state.category==='special'?[...palettes.special,{label:'비활성',code:[0,0,0]}]:state.category==='macro'?Array.from({length:28},(_,i)=>{const m=device.cache.macros?.[i];return{label:'M'+(i+1),code:[m?.mode?0x70:0x71,i,m?.mode||m?.loops||1]};}):[];const i=firstSelected(),current=i<0?'—':labelFor(device.binding(i,state.layer));return keyboard()+`<article class="card"><div class="section-heading"><h2>동작 지정</h2><select id="layerSelect" aria-label="편집할 레이어">${[[-1,'기본 레이어'],[0,'Windows · Fn'],[2,'Windows · Fn + Shift'],[1,'macOS · Fn'],[3,'macOS · Fn + Shift']].map(([v,l])=>option(v,l,state.layer)).join('')}</select></div><div class="editor-grid"><div><div class="pill-tabs">${[['basic','기본 키'],['media','미디어'],['lightkeys','조명 키'],['special','특수 · 마우스'],['macro','매크로']].map(([id,title])=>`<button data-category="${id}" class="${id===state.category?'active':''}">${title}</button>`).join('')}</div><div class="binding-keys" data-category="${state.category}">${list.map(k=>`<button data-binding="${P.hex(k.code)}" title="${esc(k.label)}" class="${P.hex(k.code)===P.hex(state.binding)?'chosen':''}">${esc(k.label)}</button>`).join('')}</div></div><div><p class="small muted">현재 동작: ${esc(current)}</p><div class="binding-preview"><span class="big-key">${esc(i<0?'선택':nameForIndex(i))}</span>${icon('arrow')}<span class="big-key" id="bindingTarget">${esc(labelFor(state.binding))}</span></div><label class="small muted" for="modifierSelect">보조키 조합</label><select id="modifierSelect" aria-label="보조키 조합">${[[0,'없음'],[1,'Ctrl'],[2,'Shift'],[4,'Alt'],[8,'Win'],[3,'Ctrl + Shift'],[5,'Ctrl + Alt'],[6,'Alt + Shift'],[9,'Win + Ctrl'],[10,'Win + Shift'],[16,'오른쪽 Ctrl'],[32,'오른쪽 Shift'],[64,'오른쪽 Alt'],[128,'오른쪽 Win'],[160,'오른쪽 Win + Shift']].map(([v,l])=>option(v,l,state.binding[0]===32&&state.binding[2]?state.binding[1]:0)).join('')}</select></div></div>${actionRow('saveMap','선택한 키에 저장','Fn 레이어는 키보드 전체에서 공유합니다. 기본 레이어는 현재 프로필에 저장됩니다.')}</article>`;}
 function depth(){
  const i=firstSelected();let v={mm:1.5,press:.1,release:.1,top:.1,bottom:.1,rtEnabled:false,deadEnabled:false};if(i>=0)try{v=device.actuation(i);}catch{}
  const deadzone=toggle('deadEnabled','데드존 사용','',v.deadEnabled)+`<div class="inline deadzone-fields"><label for="deadTop">위</label><input id="deadTop" type="number" min="0.01" max="${device.maxMm}" step=".01" value="${v.top.toFixed(2)}"><label for="deadBottom">아래</label><input id="deadBottom" type="number" min="0.01" max="${device.maxMm}" step=".01" value="${v.bottom.toFixed(2)}"><span class="small muted">mm</span></div>`;
@@ -151,9 +183,10 @@ function settings(){
  const rate=cap.wired?`<div class="setting-row"><label for="wiredRate">유선 폴링레이트</label><select id="wiredRate">${option(0,'8000 Hz',g[53])}${option(4,'1000 Hz',g[53])}</select></div>`:`<div class="setting-row"><label for="wirelessRate">무선 폴링레이트</label><select id="wirelessRate">${option(0,'8000 Hz',g[54])}${option(4,'1000 Hz',g[54])}</select></div>`;
  const profile=`<div class="setting-row"><div class="setting-label">기본 프로필 백업</div><div class="inline"><button data-action="export">내보내기</button><button data-action="import">불러오기</button></div></div><div class="setting-row"><div class="setting-label">장치 연결</div><button data-action="disconnect">연결 해제</button></div>`;
  const firmware=(cap.firmware?`<div class="setting-row"><div class="setting-label">펌웨어<span class="sub-label">키보드 ${device.versions.keyboard?'V'+device.versions.keyboard:'—'}${device.versions.receiver?' · 수신기 V'+device.versions.receiver:''}</span></div><button data-action="official">공식 업데이트 ↗</button></div>`:'')+`<div class="setting-row"><div class="setting-label">초기화</div><button data-action="official">공식 드라이버 ↗</button></div>`;
- return `<article class="card"><div class="setting-row"><label for="axisMode">스위치 모드</label><select id="axisMode">${option(2,'MAG',f[56])}${option(1,'MEC',f[56])}</select></div>${fold('키 잠금 · 고속 응답',locks)}${actionRow('saveMode')}</article>${[['절전',sleep],['폴링레이트',rate],['프로필 · 연결',profile],[cap.firmware?'업데이트 · 초기화':'초기화',firmware]].map(([title,body])=>`<details class="card option-card"><summary>${title}</summary><div class="fold-body">${body}</div></details>`).join('')}`;
+ const language=`<div class="setting-row"><div class="setting-label" id="languageLabel">언어</div><div class="language-toggle" role="group" aria-labelledby="languageLabel">${['ko','en'].map(code=>`<button data-language="${code}" aria-pressed="${L.language===code}">${code.toUpperCase()}</button>`).join('')}</div></div>`;
+ return `<article class="card">${language}<div class="setting-row"><label for="axisMode">스위치 모드</label><select id="axisMode">${option(2,'MAG',f[56])}${option(1,'MEC',f[56])}</select></div>${fold('키 잠금 · 고속 응답',locks)}${actionRow('saveMode')}</article>${[['절전',sleep],['폴링레이트',rate],['프로필 · 연결',profile],[cap.firmware?'업데이트 · 초기화':'초기화',firmware]].map(([title,body])=>`<details class="card option-card"><summary>${title}</summary><div class="fold-body">${body}</div></details>`).join('')}`;
 }
-function help(){return `<article class="card help-card"><h2>Lofree HUB 1.1.2</h2><p>Lofree Hyzen 67용 Windows 제어 프로그램입니다. USB 또는 2.4GHz로 연결해 키 매핑, 입력 깊이, 조명 등을 설정합니다.</p></article>${[['연결과 프로필','USB 유선 또는 2.4GHz 수신기로 연결합니다. Bluetooth에서는 설정용 HID 인터페이스가 제공되지 않습니다. 상단에서 7개 프로필을 전환할 수 있고, 키 매핑과 조명 등은 현재 프로필에 저장합니다.'],['저장과 설정 확인','변경한 값은 자동으로 키보드에 적용합니다. 연속 조작은 짧게 묶어 전송하고, 같은 값을 다시 읽어 확인합니다. 하단에서 적용 상태를 확인하세요. 실패하면 ‘다시 적용’을 누르거나 새로고침으로 장치 값을 다시 읽을 수 있습니다.'],['키 매핑과 Fn 레이어','키를 선택한 뒤 새 동작을 지정합니다. Ctrl을 누르며 선택하면 여러 키를 편집할 수 있습니다. Fn과 고정 키는 변경할 수 없습니다. 네 가지 Fn 레이어는 프로필 전체에서 공유됩니다.'],['입력 깊이와 고급 키','MAG 모드에서는 장치의 보정 값으로 mm와 원시 값을 변환합니다. RT는 누름·해제 이동 거리를 따로 조절하고, MT·TGL·DKS·RS·SOCD·HT를 설정할 수 있습니다. 두 키 기능은 서로 다른 키를 연결해야 합니다.'],['키 테스트와 매크로','입력 기록은 이 프로그램 창이 활성 상태일 때만 메모리에 보관합니다. 창을 벗어나면 녹화를 중지합니다. Fn이나 Windows가 가로채는 단축키는 일반 입력 이벤트에 나타나지 않을 수 있습니다. 매크로는 녹화를 중지하면 자동 적용합니다. 키 매핑에서 M1~M28을 지정하세요.'],['보정 · 펌웨어 · 초기화','이 버전의 보정, 펌웨어 쓰기, 공장 초기화는 공식 드라이버로 연결합니다. 프로그램에서 공식 도구를 열면 HID 연결을 먼저 해제합니다. 보정은 유선 MAG 모드에서 진행하세요.'],['백업 범위','내보내기는 현재 프로필의 기본 레이어 매핑과 기능 설정을 포함합니다. Fn 레이어·고급 키·입력 깊이·매크로 데이터는 이 백업 형식에 포함되지 않습니다. 원본 JSON 파일을 별도로 보관하세요.']].map(([t,p])=>`<details class="card help-card"><summary>${t}</summary><p>${p}</p></details>`).join('')}<button data-action="official">Lofree 공식 Hyzen 드라이버 ↗</button>`;}
+function help(){return `<article class="card help-card"><h2>Lofree HUB 1.2.0</h2><p>Lofree Hyzen 67용 Windows 제어 프로그램입니다. USB 또는 2.4GHz로 연결해 키 매핑, 입력 깊이, 조명 등을 설정합니다.</p></article>${[['연결과 프로필','USB 유선 또는 2.4GHz 수신기로 연결합니다. Bluetooth에서는 설정용 HID 인터페이스가 제공되지 않습니다. 상단에서 7개 프로필을 전환할 수 있고, 키 매핑과 조명 등은 현재 프로필에 저장합니다.'],['저장과 설정 확인','변경한 값은 자동으로 키보드에 적용합니다. 연속 조작은 짧게 묶어 전송하고, 같은 값을 다시 읽어 확인합니다. 하단에서 적용 상태를 확인하세요. 실패하면 ‘다시 적용’을 누르거나 새로고침으로 장치 값을 다시 읽을 수 있습니다.'],['키 매핑과 Fn 레이어','키를 선택한 뒤 새 동작을 지정합니다. Ctrl을 누르며 선택하면 여러 키를 편집할 수 있습니다. Fn과 고정 키는 변경할 수 없습니다. 네 가지 Fn 레이어는 프로필 전체에서 공유됩니다.'],['입력 깊이와 고급 키','MAG 모드에서는 장치의 보정 값으로 mm와 원시 값을 변환합니다. RT는 누름·해제 이동 거리를 따로 조절하고, MT·TGL·DKS·RS·SOCD·HT를 설정할 수 있습니다. 두 키 기능은 서로 다른 키를 연결해야 합니다.'],['키 테스트와 매크로','입력 기록은 이 프로그램 창이 활성 상태일 때만 메모리에 보관합니다. 창을 벗어나면 녹화를 중지합니다. Fn이나 Windows가 가로채는 단축키는 일반 입력 이벤트에 나타나지 않을 수 있습니다. 매크로는 녹화를 중지하면 자동 적용합니다. 키 매핑에서 M1~M28을 지정하세요.'],['보정 · 펌웨어 · 초기화','이 버전의 보정, 펌웨어 쓰기, 공장 초기화는 공식 드라이버로 연결합니다. 프로그램에서 공식 도구를 열면 HID 연결을 먼저 해제합니다. 보정은 유선 MAG 모드에서 진행하세요.'],['백업 범위','내보내기는 현재 프로필의 기본 레이어 매핑과 기능 설정을 포함합니다. Fn 레이어·고급 키·입력 깊이·매크로 데이터는 이 백업 형식에 포함되지 않습니다. 원본 JSON 파일을 별도로 보관하세요.']].map(([t,p])=>`<details class="card help-card"><summary>${t}</summary><p>${p}</p></details>`).join('')}<button data-action="official">Lofree 공식 Hyzen 드라이버 ↗</button>`;}
 async function loadAdvanced(prefetched=undefined){if(state.page!=='advanced'||firstSelected()<0)return;const v=prefetched===undefined?await device.advancedConfig(firstSelected()):prefetched;if(v){state.advanced=v.kind;render();if(v.tap)$('#advancedTap').value=P.hex(v.tap);if(v.hold)$('#advancedHold').value=P.hex(v.hold);if(v.delay!==undefined)$('#advancedDelay').value=v.delay;if(v.partner!==undefined)$('#partnerKey').value=v.partner;if(v.priority!==undefined)$('#advancedPriority').value=v.priority;if(v.mm!==undefined){$('#advancedMm').value=v.mm;syncInstrument($('#advancedMm'),true);}if(v.rtEnabled!==undefined)$('#advancedRt').checked=v.rtEnabled;if(v.rows)for(let n=0;n<4;n++){$('#dksKey'+n).value=P.hex(v.rows[n].code);$('#dksPoint'+n).value=v.points[n].toFixed(2);}}}
 async function navigate(page){
  if(!device.connected||!availablePage(page))return;
@@ -177,8 +210,8 @@ async function navigate(page){
 function render(){validationError=null;document.body.dataset.page=state.page;
  if(!device.connected){$('#content').replaceChildren();if(!isLanding())setVisibleScreen('landing');if(state.connectionPhase==='ready')setConnectionPhase('idle');updateConnection();return;}
  const views={home,keyboard:keymap,depth,advanced,light:lights,macro:macroPage,test:testPage,calibration,settings,help};
- $('#content').innerHTML=views[state.page]();syncInstruments();HyzenBlockGlow.refresh($('#content'));
- for(const paragraph of $$('#content .advanced-description,#content>p.small.muted')){const details=document.createElement('details');details.className='inline-help';details.innerHTML='<summary>사용 안내</summary>';paragraph.before(details);details.append(paragraph);}
+ $('#content').innerHTML=L.html(views[state.page]());syncInstruments();HyzenBlockGlow.refresh($('#content'));
+ for(const paragraph of $$('#content .advanced-description,#content>p.small.muted')){const details=document.createElement('details');details.className='inline-help';details.innerHTML=L.html('<summary>사용 안내</summary>');paragraph.before(details);details.append(paragraph);}
  updateConnection();if(state.page==='test')paintTest();
 }
 async function connect(){
@@ -215,6 +248,7 @@ const actions={
 function stopRecording(){if(!state.recording)return;state.recording=false;const m=state.macroDraft,down=new Map();for(const a of m.actions){let k=(a.modifier?'m':'k')+a.hid;a.down?down.set(k,a):down.delete(k);}for(const a of down.values())m.actions.push({...a,down:false,delay:0});scheduleAuto('macro');}
 function paintTest(){for(const k of $$('.key')){k.classList.toggle('down',state.pressed.has(k.dataset.event));k.classList.toggle('visited',state.visited.has(k.dataset.event));}}
 document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.caption){rpc('caption',{command:b.dataset.caption});return;}if(b.id==='cancelConfirm'||b.id==='acceptConfirm'){const resolve=state.confirm;state.confirm=null;$('#confirmDialog').close();resolve?.(b.id==='acceptConfirm');return;}if(state.busy)return;
+ if(b.dataset.language){await work(()=>switchLanguage(b.dataset.language));return;}
  if(b.dataset.page){await work(()=>navigate(b.dataset.page));return;}
  if(b.dataset.key!==undefined){let i=Number(b.dataset.key);if(i<0||!['keyboard','depth','advanced'].includes(state.page))return;await work(async()=>{if(live.busy||live.error)await live.flush();if(e.ctrlKey){state.selected.has(i)?state.selected.delete(i):state.selected.add(i);}else{state.selected.clear();state.selected.add(i);}render();if(state.page==='advanced')await loadAdvanced();});return;}
  if(b.dataset.select){await work(async()=>{if(live.busy||live.error)await live.flush();if(b.dataset.select==='none')state.selected.clear();else if(b.dataset.select==='wasd')state.selected=new Set(['20 00 1A','20 00 04','20 00 16','20 00 07'].map(c=>device.index(c)).filter(i=>i>=0));else state.selected=new Set(physical.filter(k=>!k.forbidEdit).map(k=>device.index(k.keyCode)).filter(i=>i>=0));render();});return;}
@@ -272,26 +306,26 @@ document.addEventListener('change',async e=>{const el=e.target,chosen=Number(el.
  if(el.id==='profileSelect')await work(async()=>{if(state.recording)stopRecording();await live.flush();await device.switchProfile(chosen);state.macroDraft=null;updateNavigationVisibility();await navigate(availablePage(state.page)?state.page:'home');},'프로필을 전환했습니다.');
  if(el.id==='macroSlot')await work(async()=>{if(state.recording)stopRecording();await live.flush();state.macroSlot=chosen;state.macroDraft=null;render();});
 });
-function inputKey(e,down){if(state.busy)return;if(state.page==='test'&&device.connected){if(e.repeat)return;e.preventDefault();const now=performance.now();state.testLog.unshift({key:e.code,time:new Date().toLocaleTimeString('en-GB',{hour12:false})+'.'+String(new Date().getMilliseconds()).padStart(3,'0'),interval:state.lastEvent?now-state.lastEvent:0,down});state.lastEvent=now;state.testLog=state.testLog.slice(0,300);if(down){state.pressed.add(e.code);state.visited.add(e.code);state.testCount++;}else state.pressed.delete(e.code);$('#testBody').innerHTML=testRows();$('#testCount').textContent=state.testCount;$('#visitedCount').textContent=state.visited.size;paintTest();}
- if(state.page==='macro'&&state.recording){if(e.repeat)return;e.preventDefault();const k=HYZEN_KEYS.find(k=>k.code===e.code);if(!k)return;const now=performance.now(),m=state.macroDraft;if(m.actions.length>=680){stopRecording();render();toast('매크로 저장 공간 한도에 도달했습니다.');return;}m.actions.push({delay:Math.min(65535,Math.round(now-state.recordLast)),down,modifier:/^(Meta|Control|Shift|Alt)/.test(e.code),hid:parseInt(k.hidCode,16)});state.recordLast=now;$('#macroEvents').innerHTML=macroEventHtml(m.actions);$('#macroCount').textContent=m.actions.length+'개 동작';}}
+function inputKey(e,down){if(state.busy)return;if(state.page==='test'&&device.connected){if(e.repeat)return;e.preventDefault();const now=performance.now();state.testLog.unshift({key:e.code,time:new Date().toLocaleTimeString('en-GB',{hour12:false})+'.'+String(new Date().getMilliseconds()).padStart(3,'0'),interval:state.lastEvent?now-state.lastEvent:0,down});state.lastEvent=now;state.testLog=state.testLog.slice(0,300);if(down){state.pressed.add(e.code);state.visited.add(e.code);state.testCount++;}else state.pressed.delete(e.code);$('#testBody').innerHTML=L.html(testRows());$('#testCount').textContent=state.testCount;$('#visitedCount').textContent=state.visited.size;paintTest();}
+ if(state.page==='macro'&&state.recording){if(e.repeat)return;e.preventDefault();const k=HYZEN_KEYS.find(k=>k.code===e.code);if(!k)return;const now=performance.now(),m=state.macroDraft;if(m.actions.length>=680){stopRecording();render();toast('매크로 저장 공간 한도에 도달했습니다.');return;}m.actions.push({delay:Math.min(65535,Math.round(now-state.recordLast)),down,modifier:/^(Meta|Control|Shift|Alt)/.test(e.code),hid:parseInt(k.hidCode,16)});state.recordLast=now;$('#macroEvents').innerHTML=macroEventHtml(m.actions);$('#macroCount').textContent=t(m.actions.length+'개 동작');}}
 document.addEventListener('keydown',e=>inputKey(e,true));document.addEventListener('keyup',e=>inputKey(e,false));
 window.addEventListener('blur',()=>{state.pressed.clear();if(state.page==='test')paintTest();if(state.recording){stopRecording();render();}});
 document.addEventListener('pointerdown',e=>{if(state.recording&&!e.target.closest('#recorder')&&!e.target.closest('[data-action="recordMacro"]')){stopRecording();render();}});
 $('#confirmDialog').addEventListener('cancel',()=>{state.confirm?.(false);state.confirm=null;});
-$('#nav').innerHTML=nav.map(([id,title])=>`<button data-page="${id}" class="${id==='home'?'active':''}">${icon(id)}<span>${title}</span></button>`).join('');$('#refresh').innerHTML=icon('refresh');$('#profileSelect').innerHTML=Array.from({length:7},(_,i)=>option(i,'프로필 '+String(i+1).padStart(2,'0'),0)).join('');$('#connectVisual').innerHTML=previewKeyboard();setConnectionPhase('idle');render();requestAnimationFrame(()=>$('#startConnect').focus({preventScroll:true}));
+$('#nav').innerHTML=nav.map(([id,title])=>`<button data-page="${id}" class="${id==='home'?'active':''}">${icon(id)}<span>${t(title)}</span></button>`).join('');$('#refresh').innerHTML=icon('refresh');$('#profileSelect').innerHTML=Array.from({length:7},(_,i)=>option(i,'프로필 '+String(i+1).padStart(2,'0'),0)).join('');$('#connectVisual').innerHTML=previewKeyboard();setConnectionPhase('idle');render();refreshLocale();requestAnimationFrame(()=>$('#startConnect').focus({preventScroll:true}));
 async function prepareClose(){
  for(let attempt=0;state.busy&&attempt<650;attempt++)await new Promise(resolve=>setTimeout(resolve,100));
  if(state.busy){toast('진행 중인 작업이 끝난 뒤 닫아주세요.');return false;}
  try{if(state.recording)stopRecording();await live.flush();return true;}catch(error){showError(error);return false;}
 }
-window.hyzenApp={device,state,navigate,render,rpc,prepareClose};
+window.hyzenApp={device,state,navigate,render,rpc,prepareClose,switchLanguage,refreshLocale};
 window.runVerification=async()=>{
- state.verifying=true;await live.pause();HyzenBlockGlow.beginVerification();
+ state.verifying=true;await live.pause();const bootLanguage=L.language,bootLabel=$('#startConnectLabel').textContent;L.setLanguage('ko');refreshLocale();HyzenBlockGlow.beginVerification();
  const checks=[],phases=[],wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  const settled=async()=>{for(let i=0;i<300&&state.busy;i++)await wait(100);if(state.busy)throw Error('Connection did not settle');};
  const screenshot=async name=>{await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);await rpc('capture',{name});};
  const landingOnly=()=>isLanding()&&!$('#connectScreen').hidden&&$('.shell').hidden&&$('.shell').inert;
- const windowMetrics=await rpc('windowMetrics');
+ const windowMetrics=await rpc('windowMetrics');const bootPreference=await rpc('preferences');checks.push({name:'native-language-preference-is-loaded-at-startup',ok:bootPreference.language===bootLanguage&&bootLabel===(bootLanguage==='en'?'Connect':'연결'),language:bootLanguage});
  checks.push({name:'webview-fills-window-without-black-inset',ok:windowMetrics.margin===0&&Math.abs(windowMetrics.left)<1&&Math.abs(windowMetrics.top)<1&&Math.abs(windowMetrics.width-windowMetrics.windowWidth)<1&&Math.abs(windowMetrics.height-windowMetrics.windowHeight)<1,metrics:windowMetrics});
  checks.push({name:'caption-title-removed-and-background-continuous',ok:!$('#caption>span')&&getComputedStyle($('aside')).backgroundColor==='rgba(0, 0, 0, 0)'&&getComputedStyle($('aside')).backgroundImage==='none'&&getComputedStyle($('aside')).borderRightWidth==='0px'&&getComputedStyle($('aside')).backdropFilter==='none'});
  const product=$('#productPreview');if(product&&!product.complete)await new Promise(resolve=>{product.addEventListener('load',resolve,{once:true});product.addEventListener('error',resolve,{once:true});});
@@ -489,11 +523,13 @@ window.runVerification=async()=>{
   }catch(error){checks.push({name:'actual-identical-brightness-write-and-readback',ok:false,error:error.message});}
  }
  await navigate('settings');await screenshot('automatic-settings');
+ await window.runLocaleVerification({checks,screenshot,wait,settled});
  await work(disconnectToLanding);await wait(150);
+ await screenshot('en-connection');
  checks.push({name:'disconnect-restores-connect-screen',ok:landingOnly()&&!device.connected&&state.connectionPhase==='idle'&&!$('#startConnect').disabled});
  const staleConnected=device.connected;await navigate('settings');
  checks.push({name:'settings-gated-after-disconnect',ok:landingOnly()&&!staleConnected&&$('#content').children.length===0});
  $('#startConnect').click();await settled();
  checks.push({name:'connect-after-disconnect',ok:device.connected&&!isLanding()});
- return{checks,device:device.info,versions:device.versions,keys:physical.length,window:windowMetrics};
+ return{checks,device:device.info,versions:device.versions,keys:physical.length,window:windowMetrics,bootLanguage,language:L.language};
 };

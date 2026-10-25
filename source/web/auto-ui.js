@@ -1,14 +1,15 @@
 'use strict';
 const live=new HyzenLive.LiveApply({execute:applyLiveJob,onState:liveState,delay:180});
-let autoProbe=false,probeJobs=[],suspendAutoInput=0,watchRunning=false,identicalVerification=false,validationError=null;
+let autoProbe=false,probeJobs=[],suspendAutoInput=0,watchRunning=false,identicalVerification=false,validationError=null,lastLiveState={phase:'idle'};
 function currentCapabilities(){return HyzenLive.capabilities(device.info,device.func?.[56]===2);}
 function availablePage(page){return page!=='calibration'||currentCapabilities().calibration;}
 function updateNavigationVisibility(){for(const button of document.querySelectorAll('#nav [data-page]'))button.hidden=!availablePage(button.dataset.page);HyzenPageMotion.setActive(state.page,false);}
 function liveState(info){
+ lastLiveState=info;
  if(validationError&&info.phase!=='error')info={phase:'invalid',error:validationError};
  const status=document.querySelector('#syncStatus'),retry=document.querySelector('#retryApply');if(!status)return;
  status.dataset.phase=info.phase;
- status.textContent=info.phase==='pending'?'변경 적용 대기…':info.phase==='applying'?'키보드에 적용 중…':info.phase==='saved'?'적용됨 · '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):info.phase==='error'?'자동 적용 실패 · '+info.error.message:info.phase==='invalid'?info.error.message:'변경하면 자동 적용';
+ status.textContent=HyzenLocale.text(info.phase==='pending'?'변경 적용 대기…':info.phase==='applying'?'키보드에 적용 중…':info.phase==='saved'?'적용됨 · '+new Date().toLocaleTimeString(HyzenLocale.locale,{hour:'2-digit',minute:'2-digit'}):info.phase==='error'?'자동 적용 실패 · '+info.error.message:info.phase==='invalid'?info.error.message:'변경하면 자동 적용');
  if(retry)retry.hidden=info.phase!=='error'||!live.error;
 }
 function checked(id){return document.querySelector('#'+id).checked;}

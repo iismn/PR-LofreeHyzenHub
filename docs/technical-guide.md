@@ -7,6 +7,7 @@ git clone https://github.com/iismn/PR-LofreeHyzenHub.git
 cd PR-LofreeHyzenHub
 .\build.ps1 -OutputDirectory .\build
 node --test .\tests\*.test.cjs
+.\tests\preferences-native.ps1
 ```
 
 결과는 `build\LofreeHUB.exe`입니다. Windows에 포함된 C# 컴파일러를 사용하며, Visual Studio를 요구하지 않습니다. WebView2 SDK 1.0.4258.31은 캐시가 없으면 NuGet에서 내려받고 SHA-256을 확인합니다. 이미 받은 SDK는 `-WebViewSdkDirectory`로 지정할 수 있습니다.
@@ -19,6 +20,9 @@ node --test .\tests\*.test.cjs
 | --- | --- |
 | `source/App.cs` | WPF 창, WebView2, 메시지 검증, 종료 전 적용 처리, 앱 ID·아이콘 |
 | `source/HidDevice.cs` | Windows HID 열거와 보고서 전송 |
+| `source/UserPreferences.cs` | UI 언어의 저장·초기 로드·오류 복구 |
+| `source/web/translations.js` | KO 원문과 EN 번역·동적 문구 패턴 |
+| `source/web/i18n.js` | 문구·접근성 속성 번역과 로캘 선택 |
 | `source/web/protocol.js` | 프로필·매핑·조명·입력 깊이·매크로와 재읽기 확인 |
 | `source/web/live-apply.js` | 병합·직렬 처리·오류 재시도 큐 |
 | `source/web/auto-ui.js` | 설정 입력, 연결별 항목 표시, 연결 감지 |
@@ -40,6 +44,12 @@ node --test .\tests\*.test.cjs
 일반 쓰기는 장치 응답 후 같은 주소를 다시 읽어 비교합니다. 폴링레이트는 재연결한 뒤 확인합니다. 읽기 확인을 마친 입력 깊이 캐시는 해당 바이트만 갱신합니다.
 
 ## UI 검사
+
+언어 선택은 `%LOCALAPPDATA%\HyzenControl\preferences.json`에 저장하고, 시작할 때 WebView2 문서 생성 전에 읽어 화면에 전달합니다. 저장 실패 시 이전 선택을 유지합니다. 장치 프로필과 UI 언어는 별도로 관리하며, 언어 변경은 HID 요청을 발생시키지 않습니다.
+
+새 문구는 `translations.js`에 추가하세요. 동적 숫자·키·버전 값은 패턴의 자리에 그대로 넣고, 명령 바이트와 입력 값은 번역하지 않습니다. 번역은 렌더링 경계에서 수행하며 전역 DOM 변경 감시기를 사용하지 않습니다.
+
+Node.js 검사는 번역·동적 문구·오류 안내를 포함합니다. `preferences-native.ps1`은 별도 폴더에서 저장 후 새 인스턴스 로드, 잘못된 언어·손상 파일·저장 실패를 검사합니다. `--verify`와 `--verify-min`은 검증 폴더의 별도 언어 파일을 사용해 실제 사용자 선택을 보존합니다. EN 화면, 접힌 항목, 키 팔레트, 모든 고급 키·조명 영역과 KO 복귀를 검사합니다.
 
 ```powershell
 .\build\LofreeHUB.exe --verify C:\Temp\LofreeHubCheck

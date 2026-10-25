@@ -1,6 +1,17 @@
 # Validation
 
-- Pure Node.js tests: **33 passed**. These use memory devices and fixtures, with no physical HID writes.
+## 1.2.0 language update
+
+- **40 pure Node.js tests** passed, including translation patterns and existing device-control tests.
+- **78/78 read-only UI checks** passed in both default and minimum windows. Reports: [default](validation/v1.2.0-windows.json) / [minimum](validation/v1.2.0-windows-min.json).
+- English text and accessibility labels were audited on every page, expanded section, key palette, advanced type and lighting group, including simulated USB-only controls. Layouts were checked for overflow.
+- KO/EN switching preserved field values and pending device edits, with no HID requests caused by switching.
+- Eight native preference-file checks passed: persistence across instances, invalid values, corrupt files and failed writes. The minimum-window run started with the previously saved EN preference in a new process.
+- Language-file checks and UI runs use isolated verification folders and leave the actual user language unchanged.
+
+## Earlier validation
+
+- The earlier 1.1.2 pure suite passed **33 tests**, using memory devices and fixtures with no physical HID writes.
 - A clean repository build was checked with the included PowerShell build script.
 - Release UI capture runs in native read-only verification mode. The native bridge rejects hardware writes, while automatic-apply controls use a recording executor.
 - The 1.1.2 release default-window UI run passed **68/68**. Its [JSON report](validation/v1.1.2-windows.json) is included.

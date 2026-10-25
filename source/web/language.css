@@ -1,0 +1,8 @@
+.language-toggle{display:flex;gap:3px;padding:3px;border:1px solid #c4d0ff16;border-radius:15px;background:#6774a212;flex-shrink:0}
+.language-toggle button{min-width:49px;min-height:32px;padding:6px 13px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);font-size:13px}
+.language-toggle button[aria-pressed=true]{color:#fff;background:#c3cef524;border-color:#d0dbff28}
+.language-toggle button:hover{background:#becaf41a}
+html[lang=en] .binding-keys:not([data-category=basic]):not([data-category=macro]){grid-template-columns:repeat(3,minmax(0,1fr))}
+html[lang=en] .effect span{line-height:1.3}
+html[lang=en] nav button span{min-width:0;white-space:normal;line-height:1.3}
+#syncStatus{min-width:0;overflow-wrap:anywhere}

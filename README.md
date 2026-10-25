@@ -1,16 +1,16 @@
 <div align="center">
 
-[Windows](#requirements-and-setup) · [User guide](docs/user-guide.md)
+[Windows](#requirements-and-setup) · [KO](docs/user-guide.md) / [EN](docs/user-guide.en.md)
 
 <img src="docs/images/hero.gif" alt="Lofree HUB — HYZEN67 keyboard and actuation settings" width="1280">
 
 <br><br>
 
-<a href="https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.1.2/LofreeHUB.exe"><img src="docs/images/download-windows.svg" alt="Download Lofree HUB 1.1.2 for Windows" width="260" height="56"></a>
+<a href="https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.2.0/LofreeHUB.exe"><img src="docs/images/download-windows.svg" alt="Download Lofree HUB 1.2.0 for Windows" width="260" height="56"></a>
 
-**1.1.2 · Windows 10 / 11 · x64**
+**1.2.0 · Windows 10 / 11 · x64**
 
-[Release notes](https://github.com/iismn/PR-LofreeHyzenHub/releases/tag/v1.1.2) · [User guide (Korean)](docs/user-guide.md) · [Issues](https://github.com/iismn/PR-LofreeHyzenHub/issues)
+[Release notes](https://github.com/iismn/PR-LofreeHyzenHub/releases/tag/v1.2.0) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Issues](https://github.com/iismn/PR-LofreeHyzenHub/issues)
 
 [Actuation](#actuation) · [Key Mapping](#key-mapping) · [Lighting](#lighting)
 
@@ -58,20 +58,30 @@ USB-only controls appear when connected by cable. Calibration also requires **MA
 
 <br>
 
+## Language
+
+Choose **KO** or **EN** in **General → Language**. Menus, key lists, help, status messages and app errors switch together. The choice is kept after restarting and does not change keyboard configuration.
+
+| KO | EN |
+| :---: | :---: |
+| ![Korean General settings](docs/images/settings-ko.png) | ![English General settings](docs/images/settings-en.png) |
+
+<br>
+
 <details id="requirements-and-setup">
 <summary><strong>Requirements and setup</strong></summary>
 
 Windows 10 or Windows 11, x64, .NET Framework 4.8, and Microsoft Edge WebView2 Runtime.
 
-1. [Download LofreeHUB.exe](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.1.2/LofreeHUB.exe) to a writable folder and run it.
+1. [Download LofreeHUB.exe](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.2.0/LofreeHUB.exe) to a writable folder and run it.
 2. Connect the keyboard by USB or its 2.4 GHz receiver, then click **연결**.
 3. Select a key or setting. Changes apply automatically; a separate save button is not required.
 
 If the app reports that WebView2 is missing, [install the WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/).
 
-For a stable Start menu shortcut, download the [Windows ZIP](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.1.2/LofreeHUB-1.1.2-Windows-x64.zip), extract it, and run `Install.ps1` with PowerShell. It installs to `%LOCALAPPDATA%\Programs\LofreeHUB` and registers **Lofree HUB** in Start. Right-click the app in Start to pin it.
+For a stable Start menu shortcut, download the [Windows ZIP](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.2.0/LofreeHUB-1.2.0-Windows-x64.zip), extract it, and run `Install.ps1` with PowerShell. It installs to `%LOCALAPPDATA%\Programs\LofreeHUB` and registers **Lofree HUB** in Start. Right-click the app in Start to pin it.
 
-Settings change on the keyboard. WebView2 data stays in `%LOCALAPPDATA%\HyzenControl`, preserving the earlier app's local data. Close the app before replacing its EXE. The interface currently uses Korean labels.
+Settings change on the keyboard. WebView2 data and the local language preference stay in `%LOCALAPPDATA%\HyzenControl`, preserving the earlier app's local data. Close the app before replacing its EXE. The initial language is KO; select EN in **일반 → 언어** to use English.
 
 </details>
 
@@ -91,6 +101,6 @@ Settings change on the keyboard. WebView2 data stays in `%LOCALAPPDATA%\HyzenCon
 
 ---
 
-[Download 1.1.2](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.1.2/LofreeHUB.exe) · [User guide (Korean)](docs/user-guide.md) · [Build guide (Korean)](docs/technical-guide.md) · [Report an issue](https://github.com/iismn/PR-LofreeHyzenHub/issues)
+[Download 1.2.0](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.2.0/LofreeHUB.exe) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Build guide (Korean)](docs/technical-guide.md) · [Report an issue](https://github.com/iismn/PR-LofreeHyzenHub/issues)
 
 [Asset sources](REFERENCE.md) · [Fonts and WebView2 notices](licenses) · [Preview source](docs/tools/README.md)

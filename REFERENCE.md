@@ -39,3 +39,5 @@ Windows HID OutputReportByteLength는 수신기도 64바이트입니다. 무선 
 
 1.1.2의 앱 아이콘은 XAML 벡터로 직접 그린 키보드 모양입니다. 공식 로고를 수정한 자산이 아닙니다. 16/20/24/32/48/64/128/256px PNG 프레임을 ICO로 묶어 EXE의 Win32 리소스와 WPF 창 아이콘에 넣었습니다.
 Windows 식별은 SetCurrentProcessExplicitAppUserModelID와 바로가기의 System.AppUserModel.ID를 같은 Lofree.HUB로 지정합니다. 참고: https://learn.microsoft.com/en-us/windows/win32/properties/props-system-appusermodel-id 및 https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-shgetpropertystorefromparsingname
+
+1.2.0은 일반 설정에서 KO/EN을 선택합니다. 번역표와 동적 문구 패턴은 앱에 포함되며, DOM 렌더링 경계의 문구·접근성 속성에만 적용합니다. 명령 값은 번역하지 않습니다. UI 언어는 기존 DataPath의 preferences.json에 원자적으로 저장하고 문서 생성 전에 전달합니다. 검증 모드에서는 검증 폴더에 별도로 저장합니다. 언어 전환은 입력 값·접힌 항목·대기 중 전송을 보존하고 HID 전송을 강제로 시작하지 않습니다.

@@ -8,15 +8,20 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 parser = argparse.ArgumentParser()
 parser.add_argument("capture", type=Path)
+parser.add_argument("--language", choices=["ko", "en"], default="en")
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[2]
 output = root / "docs/images"
 output.mkdir(parents=True, exist_ok=True)
 fonts = root / "source/web"
 font = lambda size: ImageFont.truetype(str(fonts / "Manrope-Regular.ttf"), size)
+def source_path(name):
+    if args.language == "en":
+        name = {"landing.png": "en-connection.png", "keyboard.png": "en-keyboard.png", "depth-controls.png": "en-actuation.png", "light.png": "en-light.png", "home.png": "en-home.png"}.get(name, name)
+    return args.capture / name
 
 for source, name in {"landing.png": "connection.png", "keyboard.png": "key-mapping.png", "depth-controls.png": "actuation.png", "light.png": "lighting.png"}.items():
-    with Image.open(args.capture / source) as image:
+    with Image.open(source_path(source)) as image:
         image.convert("RGB").resize((1280, round(image.height * 1280 / image.width)), Image.Resampling.LANCZOS).save(output / name, optimize=True)
 
 W, H = 1280, 800
@@ -39,7 +44,7 @@ draw.rounded_rectangle((1092, 34, 1224, 70), radius=18, outline="#495273", fill=
 draw.text((1109, 43), "Windows x64", font=font(12), fill="#d0d7ed")
 
 def panel(filename, width, angle):
-    with Image.open(args.capture / filename) as capture:
+    with Image.open(source_path(filename)) as capture:
         image = capture.convert("RGBA").resize((width, round(capture.height * width / capture.width)), Image.Resampling.LANCZOS)
     mask = Image.new("L", image.size)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, image.width-1, image.height-1), radius=13, fill=255)
@@ -73,5 +78,8 @@ with Image.open(output / "hero.gif") as gif:
         gif.load()
         total += gif.info["duration"]
     report = {"frames": gif.n_frames, "durationMs": total, "size": gif.size, "bytes": (output / "hero.gif").stat().st_size,
-              "source": "Lofree HUB 1.1.2 read-only native app captures", "method": "Position animation of unchanged real screenshots"}
+              "source": "Lofree HUB 1.2.0 read-only native app captures", "method": "Position animation of unchanged real screenshots"}
 print(json.dumps(report))
+for language in ["ko", "en"]:
+    with Image.open(args.capture / f"{language}-general.png") as image:
+        image.convert("RGB").resize((1280, round(image.height * 1280 / image.width)), Image.Resampling.LANCZOS).save(output / f"settings-{language}.png", optimize=True)

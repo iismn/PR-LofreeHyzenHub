@@ -18,8 +18,8 @@ using Microsoft.Web.WebView2.Wpf;
 [assembly:AssemblyTitle("Lofree HUB")]
 [assembly:AssemblyProduct("Lofree HUB")]
 [assembly:AssemblyDescription("Lofree HYZEN 67 keyboard settings")]
-[assembly:AssemblyVersion("1.1.2.0")]
-[assembly:AssemblyFileVersion("1.1.2.0")]
+[assembly:AssemblyVersion("1.2.0.0")]
+[assembly:AssemblyFileVersion("1.2.0.0")]
 namespace HyzenControl {
  static class Program {
   internal const string AppUserModelId="Lofree.HUB";
@@ -30,6 +30,8 @@ namespace HyzenControl {
   internal static bool VerifySmall;
   internal static bool VerifyLive;
   internal static int VerifyWrites;
+  internal static UserPreferences Preferences;
+  internal static string Text(string ko,string en){return Preferences!=null&&Preferences.Language=="en"?en:ko;}
   [STAThread] static void Main(string[] args) {
    Marshal.ThrowExceptionForHR(SetCurrentProcessExplicitAppUserModelID(AppUserModelId));
    Directory.CreateDirectory(DataPath);
@@ -39,6 +41,8 @@ namespace HyzenControl {
     return null;
    };
    if(args.Length==2&&(args[0]=="--verify"||args[0]=="--verify-min"||args[0]=="--verify-live")){VerifyDirectory=args[1];VerifySmall=args[0]=="--verify-min";VerifyLive=args[0]=="--verify-live";}
+   string preferenceRoot=VerifyDirectory??DataPath;Directory.CreateDirectory(preferenceRoot);
+   Preferences=new UserPreferences(Path.Combine(preferenceRoot,"preferences.json"));
    try { Run(); } catch(Exception e) { File.WriteAllText(Path.Combine(DataPath,"startup-error.txt"),e.ToString());MessageBox.Show(e.Message,"Lofree HUB"); }
   }
   [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
@@ -103,14 +107,19 @@ namespace HyzenControl {
       await core.ExecuteScriptAsync("window.runVerification().then(result=>chrome.webview.postMessage({id:-1,action:'verification',result})).catch(error=>chrome.webview.postMessage({id:-1,action:'verification',result:{error:String(error)}}))");
      } catch(Exception e){File.WriteAllText(Path.Combine(Program.VerifyDirectory,"error.txt"),e.ToString());}
     };
+    await core.AddScriptToExecuteOnDocumentCreatedAsync("window.HUB_PREFERENCES="+json.Serialize(new{language=Program.Preferences.Language})+";");
     core.Navigate(Origin+"/index.html");
-   }catch(Exception e){MessageBox.Show(this,"화면을 열지 못했습니다. Microsoft Edge WebView2 Runtime이 필요합니다.\n"+e.Message,"Lofree HUB");Close();}
+   }catch(Exception e){MessageBox.Show(this,Program.Text("화면을 열지 못했습니다. Microsoft Edge WebView2 Runtime이 필요합니다.\n","Could not open the interface. Microsoft Edge WebView2 Runtime is required.\n")+e.Message,"Lofree HUB");Close();}
   }
   async void Message(object sender,CoreWebView2WebMessageReceivedEventArgs e) {
    if(e.Source!=Origin+"/index.html"||e.WebMessageAsJson.Length>1048576||closing)return;
    int id=0;
    try {
     var m=json.Deserialize<Dictionary<string,object>>(e.WebMessageAsJson);id=Convert.ToInt32(m["id"]);string action=Convert.ToString(m["action"]);
+    if(action=="preferences"){
+     if(m.ContainsKey("language"))Program.Preferences.SetLanguage(Convert.ToString(m["language"]));
+     web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{language=Program.Preferences.Language}}));return;
+    }
     if(action=="closeReady"){closePending=false;if(Convert.ToBoolean(m["ready"])){closeReady=true;Close();}return;}
     if(action=="verification"&&Program.VerifyDirectory!=null) {
      File.WriteAllText(Path.Combine(Program.VerifyDirectory,"ui-result.json"),json.Serialize(m["result"]),Encoding.UTF8);
@@ -132,10 +141,10 @@ namespace HyzenControl {
      string cmd=Convert.ToString(m["command"]);if(cmd=="close"){Close();return;}if(cmd=="minimize")WindowState=WindowState.Minimized;if(cmd=="maximize")WindowState=WindowState==WindowState.Maximized?WindowState.Normal:WindowState.Maximized;
     } else if(action=="official") {Process.Start(new ProcessStartInfo("https://hyzen.lofree.tech/#/"){UseShellExecute=true});}
     else if(action=="export") {
-     var dialog=new Microsoft.Win32.SaveFileDialog{FileName="Hyzen-profile.json",Filter="Hyzen 설정 (*.json)|*.json"};
+     var dialog=new Microsoft.Win32.SaveFileDialog{FileName="Hyzen-profile.json",Title=Program.Text("프로필 내보내기","Export profile"),Filter=Program.Text("Hyzen 설정 (*.json)|*.json","Hyzen settings (*.json)|*.json")};
      if(dialog.ShowDialog(this)==true){File.WriteAllText(dialog.FileName,Convert.ToString(m["text"]),new UTF8Encoding(false));value=true;}
     } else if(action=="import") {
-     var dialog=new Microsoft.Win32.OpenFileDialog{Filter="Hyzen 설정 (*.json)|*.json"};
+     var dialog=new Microsoft.Win32.OpenFileDialog{Title=Program.Text("프로필 불러오기","Import profile"),Filter=Program.Text("Hyzen 설정 (*.json)|*.json","Hyzen settings (*.json)|*.json")};
      if(dialog.ShowDialog(this)==true){if(new FileInfo(dialog.FileName).Length>1048576)throw new ArgumentException("설정 파일이 너무 큽니다.");value=File.ReadAllText(dialog.FileName);}
     } else {
      await operations.WaitAsync();
