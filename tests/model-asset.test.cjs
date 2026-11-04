@@ -30,7 +30,7 @@ test('shipped model preserves planar caps and the approved shallow five-row prof
 test('keyboard model and renderer dependencies load entirely from bundled files',()=>{
  assert.ok(gltf.buffers.every(b=>!b.uri));
  assert.ok((gltf.images||[]).every(image=>image.bufferView!==undefined&&!image.uri));
- for(const name of ['keyboard3d.js','keyboard-post.js','keyboard-lighting.js','three.module.js','three.core.js','three-gltf.js','three-hdr.js','three-geometry.js','three-skeleton.js']){
+ for(const name of ['keyboard3d.js','keyboard-post.js','keyboard-lighting.js','keyboard-motion.js','three.module.js','three.core.js','three-gltf.js','three-hdr.js','three-geometry.js','three-skeleton.js']){
   const source=fs.readFileSync(path.join(web,name),'utf8');
   for(const [,importPath]of source.matchAll(/^(?:import|export)\s[^;]*?\bfrom\s+['"]([^'"]+)['"]/gm)){
    assert.ok(importPath.startsWith('./'),`${name}: ${importPath}`);

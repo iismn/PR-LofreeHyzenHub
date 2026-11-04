@@ -1,6 +1,7 @@
 (function(root){
 'use strict';
 const messages={
+ '드래그하여 회전 · 휠로 확대/축소 · 두 번 클릭하여 초기화':'Drag to rotate · Scroll to zoom · Double-click to reset',
  '키보드 그래픽 크기':'Keyboard graphic size','보기 크기가 올바르지 않습니다.':'Choose a valid view size.','앱 설정을 저장하지 못했습니다.':'Could not save app preferences.',
  '3D 보기 초기화':'Reset 3D view','드래그하여 회전 · 두 번 클릭하여 초기화':'Drag to rotate · Double-click to reset',
  '키보드':'Keyboard','키 매핑':'Key Mapping','입력 깊이':'Actuation','고급 키':'Advanced','조명':'Lighting','매크로':'Macros','키 테스트':'Key Test','보정':'Calibration','일반':'General','도움말':'Help',

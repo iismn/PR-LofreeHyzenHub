@@ -1,4 +1,21 @@
 // Native read-only checks. Fixtures and control jobs never reach physical HID.
+export async function verifyNavigation({checks,modelReady,wait}){
+ const canvas=document.querySelector('#content .keyboard-canvas'),main=document.querySelector('main');
+ const originalScroll=main.scrollTop;
+ const event=new WheelEvent('wheel',{deltaY:-100,bubbles:true,cancelable:true});canvas.dispatchEvent(event);
+ const pending=Hyzen3D.inspect();await modelReady();const enlarged=Hyzen3D.inspect();
+ checks.push({name:'3d-wheel-zooms-smoothly-and-consumes-page-scroll',ok:event.defaultPrevented&&pending.goal.zoom>pending.pose.zoom&&enlarged.pose.zoom>1.1&&main.scrollTop===originalScroll});
+ const r=canvas.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+ canvas.dispatchEvent(new PointerEvent('pointerdown',{pointerId:17,button:0,clientX:x,clientY:y,bubbles:true}));
+ canvas.dispatchEvent(new PointerEvent('pointermove',{pointerId:17,clientX:x-20,clientY:y+8,bubbles:true}));await wait(120);
+ const displaced=Hyzen3D.inspect();canvas.dispatchEvent(new PointerEvent('pointerup',{pointerId:17,clientX:x-20,clientY:y+8,bubbles:true}));
+ const snapping=Hyzen3D.inspect();await wait(60);const during=Hyzen3D.inspect();await modelReady();const returned=Hyzen3D.inspect();
+ checks.push({name:'3d-small-drag-follows-hand-and-magnetically-returns-without-losing-zoom',ok:displaced.goal.yaw>0&&displaced.pose.yaw>0&&snapping.magnetic&&during.pose.yaw>0&&during.pose.yaw<displaced.pose.yaw&&Math.abs(returned.pose.yaw)<.0001&&Math.abs(returned.pose.elevation-1.05)<.0001&&Math.abs(returned.pose.zoom-enlarged.pose.zoom)<.001});
+ canvas.dispatchEvent(new WheelEvent('wheel',{deltaY:100,bubbles:true,cancelable:true}));await modelReady();
+ checks.push({name:'3d-wheel-zooms-out-and-reset-restores-fit',ok:Math.abs(Hyzen3D.inspect().pose.zoom-1)<.001});
+ Hyzen3D.reset();await modelReady();
+}
+
 export async function verifyScale({checks,modelReady,wait,settled}){
  const {device,state,rpc}=window.hyzenApp;const saved=await rpc('preferences'),hardware=[],originalRpc=device.rpc;
  device.rpc=async(action,args)=>{hardware.push(action);return originalRpc(action,args);};

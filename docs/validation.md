@@ -1,5 +1,13 @@
 # Validation
 
+## 1.3.2 3D navigation
+
+- **51 Node tests**, **14 native preference checks**, and **94/94 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.3.2-windows.json) / [minimum](validation/v1.3.2-windows-min.json).
+- Wheel input smoothly changed camera zoom and consumed page scrolling. Horizontal drag followed the hand. A small drag returned through intermediate spring positions to the exact default angle while preserving zoom; a larger drag retained its rotation until reset.
+- Pure motion checks cover the 10° boundary relative to both connection and settings views, zoom bounds and line-mode wheel deltas, and spring convergence at 20/30/60/120 fps.
+- The first minimum-window attempt hit one physical macro-read timeout, also preventing that page's transition check. A fresh minimum-window run passed all 94 checks. No protocol or timeout behavior was changed.
+- Both passing native runs recorded zero physical setting writes. Key hit targets, lighting, idle rendering, context recovery and KO/EN layout checks remained passing. The Blender geometry and the physical validation scope below are unchanged.
+
 ## 1.3.1 lighting and graphic size
 
 - **47 Node tests**, **14 native preference checks**, and **91/91 native UI checks** at both default and minimum sizes passed. Reports: [default](validation/v1.3.1-windows.json) / [minimum](validation/v1.3.1-windows-min.json).

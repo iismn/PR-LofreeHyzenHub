@@ -3,6 +3,7 @@ import { GLTFLoader } from './three-gltf.js';
 import { HDRLoader } from './three-hdr.js';
 import { KeyboardBloom } from './keyboard-post.js';
 import './keyboard-lighting.js';
+import './keyboard-motion.js';
 
 // One renderer and one cached Blender asset are reused across every page.
 // The model never talks to HID. Picking delegates to the existing key buttons.
@@ -20,8 +21,11 @@ const pointer = new THREE.Vector2();
 const target = new THREE.Vector3(0,.3,0);
 let modelBounds,buttons=new Map();
 const fallbackPositions=new WeakMap();
-const pose = {yaw: -.22, elevation: .95};
+const Motion=window.HyzenKeyboardMotion;
+const pose = Motion.home('landing');
 let goal = {...pose}, renderer, bloom, environment, studio, capPhoto, modelPromise, model, host,frontStrip,ground,stripTexture;
+let magnetic=false;
+const velocity={yaw:0,elevation:0};
 let frame=0, lastTime=0, activePointer, hovering, error, visible=true, measured={width:0,height:0};
 let pendingFrames=0, rendered=0, loads=0, contextLost=false;
 let lightTimer=0,lastHit=null,lastLighting;
@@ -190,11 +194,11 @@ function refresh(){
   if(host){
    host.dataset.modelState=error?'fallback':'loading';host.prepend(canvas);
    resizeObserver.observe(host);
-   if(viewChanged)goal=host.dataset.modelView==='landing'?{yaw:-.22,elevation:.95}:{yaw:0,elevation:1.05};
+   if(viewChanged){goal=Motion.home(host.dataset.modelView);magnetic=false;velocity.yaw=velocity.elevation=0;}
    // During page changes keep an established pose; animate connection into view.
    if(!rendered||reduced.matches)Object.assign(pose,goal);
    for(const b of host.querySelectorAll('[data-model-reset]')){
-    b.ariaLabel=translate('3D 보기 초기화');b.title=translate('드래그하여 회전 · 두 번 클릭하여 초기화');
+    b.ariaLabel=translate('3D 보기 초기화');b.title=translate('드래그하여 회전 · 휠로 확대/축소 · 두 번 클릭하여 초기화');
    }
    for(const input of host.querySelectorAll('[data-model-scale]'))input.value=String(graphicScale);
   }
@@ -225,6 +229,7 @@ function fitCamera(){
   halfWidth=Math.max(halfWidth,Math.abs(p.x));halfHeight=Math.max(halfHeight,Math.abs(p.y));
  }
  const half=Math.max(halfWidth/aspect,halfHeight)*1.06;
+ camera.zoom=pose.zoom;
  camera.left=-half*aspect;camera.right=half*aspect;camera.top=half;camera.bottom=-half;
  camera.updateProjectionMatrix();
 }
@@ -256,10 +261,19 @@ function tick(now){
  const smoothing=reduced.matches?1:1-Math.exp(-dt*13);
  let moving=false;
  const lighting=readLighting(),seconds=(reduced.matches||window.hyzenApp?.state.verifying)?0:now/1000;
+ let rotationSettled=true;
  for(const name of ['yaw','elevation']){
-  pose[name]+=(goal[name]-pose[name])*smoothing;
-  if(Math.abs(goal[name]-pose[name])>.0001)moving=true;else pose[name]=goal[name];
+  if(magnetic&&!reduced.matches){
+   const next=Motion.spring(pose[name],velocity[name],goal[name],dt);pose[name]=next.position;velocity[name]=next.velocity;
+   if(!next.settled){moving=true;rotationSettled=false;}
+  }else{
+   pose[name]+=(goal[name]-pose[name])*smoothing;
+   if(Math.abs(goal[name]-pose[name])>.0001)moving=true;else pose[name]=goal[name];
+  }
  }
+ if(magnetic&&rotationSettled)magnetic=false;
+ pose.zoom+=(goal.zoom-pose.zoom)*smoothing;
+ if(Math.abs(goal.zoom-pose.zoom)>.0001)moving=true;else pose.zoom=goal.zoom;
  for(const [code,key]of keys){
   const button=buttonFor(code),down=button?.classList.contains('down');
   const selected=button?.classList.contains('selected'),visited=button?.classList.contains('visited');
@@ -337,6 +351,7 @@ function pick(clientX,clientY){
 
 canvas.addEventListener('pointerdown',event=>{
  if(event.button!==0||error)return;
+ magnetic=false;velocity.yaw=velocity.elevation=0;
  activePointer={id:event.pointerId,x:event.clientX,y:event.clientY,yaw:goal.yaw,elevation:goal.elevation,drag:false};
  if(event.isTrusted)canvas.setPointerCapture(event.pointerId);
 });
@@ -345,8 +360,7 @@ canvas.addEventListener('pointermove',event=>{
   const dx=event.clientX-activePointer.x,dy=event.clientY-activePointer.y;
   if(Math.hypot(dx,dy)>5)activePointer.drag=true;
   if(activePointer.drag){
-   goal.yaw=THREE.MathUtils.clamp(activePointer.yaw+dx*.005,-.8,.8);
-   goal.elevation=THREE.MathUtils.clamp(activePointer.elevation+dy*.005,.62,1.45);
+   Object.assign(goal,Motion.drag(activePointer,dx,dy));
    host.classList.add('model-orbiting');hovering=null;invalidate();
   }
  }else{
@@ -357,6 +371,7 @@ canvas.addEventListener('pointermove',event=>{
 });
 function finishPointer(event,cancel=false){
  if(!activePointer||activePointer.id!==event.pointerId)return;
+ const dragged=activePointer.drag;
  const clicked=!activePointer.drag&&!cancel;
  activePointer=null;host?.classList.remove('model-orbiting');
  if(canvas.hasPointerCapture(event.pointerId))canvas.releasePointerCapture(event.pointerId);
@@ -364,14 +379,21 @@ function finishPointer(event,cancel=false){
   const button=buttonFor(pick(event.clientX,event.clientY));
   if(button&&!button.disabled)button.dispatchEvent(new MouseEvent('click',{bubbles:true,ctrlKey:event.ctrlKey,shiftKey:event.shiftKey}));
  }
+ if(dragged&&!cancel&&Motion.nearHome(goal,host?.dataset.modelView)){
+  const base=Motion.home(host?.dataset.modelView);goal.yaw=base.yaw;goal.elevation=base.elevation;magnetic=true;
+ }
  invalidate();
 }
 canvas.addEventListener('pointerup',event=>finishPointer(event));
 canvas.addEventListener('pointercancel',event=>finishPointer(event,true));
 canvas.addEventListener('lostpointercapture',()=>{activePointer=null;host?.classList.remove('model-orbiting');});
 canvas.addEventListener('pointerleave',()=>{hovering=null;canvas.title='';invalidate();});
-function reset(){goal=host?.dataset.modelView==='landing'?{yaw:-.22,elevation:.95}:{yaw:0,elevation:1.05};invalidate();}
+function reset(){goal=Motion.home(host?.dataset.modelView);magnetic=true;velocity.yaw=velocity.elevation=0;invalidate();}
 canvas.addEventListener('dblclick',reset);
+canvas.addEventListener('wheel',event=>{
+ if(error||contextLost||!event.deltaY)return;
+ event.preventDefault();goal.zoom=Motion.wheel(goal.zoom,event.deltaY,event.deltaMode,measured.height);invalidate();
+},{passive:false});
 document.addEventListener('click',event=>{if(event.target.closest('[data-model-reset]'))reset();});
 document.addEventListener('focusin',event=>{if(event.target.matches('[data-model-key]')){hovering=event.target.dataset.modelKey;invalidate();}});
 document.addEventListener('focusout',()=>{hovering=null;invalidate();});
@@ -394,7 +416,7 @@ function refreshView(){const previous=host;originalRefresh();if(previous!==host)
 
 // Read-only diagnostics are used by the native visual checks; no hardware calls.
 async function ready(){await load();refreshView();for(let i=0;i<100&&host&&host.dataset.modelState!=='ready'&&!error;i++)await new Promise(resolve=>setTimeout(resolve,30));return inspect();}
-function inspect(){return{keys:keys.size,loads,rendered,error:error||null,state:host?.dataset.modelState||'detached',view:host?.dataset.modelView||null,pose:{...pose},goal:{...goal},canvasCount:document.querySelectorAll('.keyboard-canvas').length,drawCalls:bloom?.info.calls,triangles:bloom?.info.triangles,dimensions:{...measured},scheduled:!!frame||!!lightTimer,lighting:lastLighting,studio:!!studio,frontStrip:!!frontStrip,bloom:!!bloom,scale:graphicScale};}
+function inspect(){return{keys:keys.size,loads,rendered,error:error||null,state:host?.dataset.modelState||'detached',view:host?.dataset.modelView||null,pose:{...pose},goal:{...goal},canvasCount:document.querySelectorAll('.keyboard-canvas').length,drawCalls:bloom?.info.calls,triangles:bloom?.info.triangles,dimensions:{...measured},scheduled:!!frame||!!lightTimer,lighting:lastLighting,studio:!!studio,frontStrip:!!frontStrip,bloom:!!bloom,scale:graphicScale,magnetic};}
 function keyCenter(code){const key=keys.get(code);if(!key||!host)return null;const point=key.center.clone().applyMatrix4(key.node.matrixWorld).project(camera),rect=canvas.getBoundingClientRect();return{x:rect.left+(point.x+1)/2*rect.width,y:rect.top+(1-point.y)/2*rect.height};}
 function keyState(code){const key=keys.get(code);return key?{pressed:key.pressed,light:key.light,offset:key.y-key.node.position.y,led:key.led}:null;}
 function setScale(value){if(!Number.isInteger(value)||value<80||value>160||value%10)return;graphicScale=value;document.documentElement.style.setProperty('--keyboard-graphic-scale',value/100);resize();}
