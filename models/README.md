@@ -28,3 +28,5 @@ Each key contains its own photograph roof region, aligned to the physical cap. B
 In 1.3.1, the viewer uses darker studio illumination and a local-space diffusion field inside each key. Visible HDR radiance is rendered to a half-float target, extracted and blurred at two scales, then composited with the original transparency and tone mapping. This replaces the earlier screen-space strip overlay. Graphic size is a local preference, defaulting to 120%; it does not modify the Blender geometry.
 
 In 1.3.2, wheel input adjusts the orthographic camera zoom, and horizontal orbit follows the hand. Releasing a drag within 10° of the view's default yaw and elevation starts a damped spring return without changing zoom. Larger rotations stay in place. Reset restores angle and zoom while retaining the graphic-size preference. These controls do not modify the model or send device settings.
+
+In 1.3.3, the return threshold increases to 30° on each axis. The connection screen uses a fixed 160% graphic size within the available window space. The saved 80–160% preference applies to settings views only; wheel zoom and reset remain available on both screens.

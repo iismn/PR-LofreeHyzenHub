@@ -1,5 +1,13 @@
 # Validation
 
+## 1.3.3 return range and connection-screen size
+
+- **51 Node tests** and **96/96 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.3.3-windows.json) / [minimum](validation/v1.3.3-windows-min.json).
+- Motion checks cover the new 30° boundary on both views. Native interaction returned from about 23° while preserving zoom; a rotation beyond 30° stayed until reset.
+- Changing the saved settings-view size between 80% and 160% left the connection-screen scale at 160% with identical dimensions and no size selector. Its model region fit between the title and connection controls at both window sizes.
+- An initial enlarged layout extended into the connection indicator area. Grid sizing was corrected before the passing final runs. Intermediate hardware reads also timed out; the final runs were performed after the user woke the keyboard.
+- Native verification recorded zero physical setting writes. Device communication, Blender geometry and preference storage are unchanged from 1.3.2.
+
 ## 1.3.2 3D navigation
 
 - **51 Node tests**, **14 native preference checks**, and **94/94 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.3.2-windows.json) / [minimum](validation/v1.3.2-windows-min.json).

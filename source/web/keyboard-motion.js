@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-const magnetAngle=10*Math.PI/180;
+const magnetAngle=30*Math.PI/180;
 function home(view){return view==='landing'?{yaw:-.22,elevation:.95,zoom:1}:{yaw:0,elevation:1.05,zoom:1};}
 function drag(start,dx,dy){return{yaw:clamp(start.yaw-dx*.005,-.8,.8),elevation:clamp(start.elevation+dy*.005,.62,1.45)};}
 function nearHome(pose,view){const base=home(view);return Math.abs(pose.yaw-base.yaw)<=magnetAngle+1e-9&&Math.abs(pose.elevation-base.elevation)<=magnetAngle+1e-9;}

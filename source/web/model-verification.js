@@ -1,4 +1,16 @@
 // Native read-only checks. Fixtures and control jobs never reach physical HID.
+export async function verifyLandingScale({checks,modelReady}){
+ const host=document.querySelector('#connectVisual .model-host'),saved=Hyzen3D.scale;
+ const measure=()=>{const r=host.getBoundingClientRect();return{width:r.width,height:r.height,scale:Number(getComputedStyle(host).getPropertyValue('--keyboard-graphic-scale'))};};
+ try{
+  Hyzen3D.setScale(80);await modelReady();const smaller=measure();
+  Hyzen3D.setScale(160);await modelReady();const larger=measure();
+  checks.push({name:'landing-size-is-fixed-at-160-independent-of-settings-size',ok:smaller.scale===1.6&&larger.scale===1.6&&Math.abs(larger.width-smaller.width)<.5&&Math.abs(larger.height-smaller.height)<.5&&!host.querySelector('[data-model-scale]'),sizes:{smaller,larger}});
+  const model=host.getBoundingClientRect(),heading=document.querySelector('.connect-heading').getBoundingClientRect(),controls=document.querySelector('.connect-controls').getBoundingClientRect();
+  checks.push({name:'landing-model-fits-between-heading-and-connect-controls',ok:model.width>0&&model.height>0&&model.top>=heading.bottom&&model.bottom<=controls.top+.5,bounds:{modelTop:model.top,modelBottom:model.bottom,headingBottom:heading.bottom,controlsTop:controls.top}});
+ }finally{Hyzen3D.setScale(saved);await modelReady();}
+}
+
 export async function verifyNavigation({checks,modelReady,wait}){
  const canvas=document.querySelector('#content .keyboard-canvas'),main=document.querySelector('main');
  const originalScroll=main.scrollTop;
@@ -7,10 +19,10 @@ export async function verifyNavigation({checks,modelReady,wait}){
  checks.push({name:'3d-wheel-zooms-smoothly-and-consumes-page-scroll',ok:event.defaultPrevented&&pending.goal.zoom>pending.pose.zoom&&enlarged.pose.zoom>1.1&&main.scrollTop===originalScroll});
  const r=canvas.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
  canvas.dispatchEvent(new PointerEvent('pointerdown',{pointerId:17,button:0,clientX:x,clientY:y,bubbles:true}));
- canvas.dispatchEvent(new PointerEvent('pointermove',{pointerId:17,clientX:x-20,clientY:y+8,bubbles:true}));await wait(120);
- const displaced=Hyzen3D.inspect();canvas.dispatchEvent(new PointerEvent('pointerup',{pointerId:17,clientX:x-20,clientY:y+8,bubbles:true}));
+ canvas.dispatchEvent(new PointerEvent('pointermove',{pointerId:17,clientX:x-80,clientY:y+8,bubbles:true}));await wait(120);
+ const displaced=Hyzen3D.inspect();canvas.dispatchEvent(new PointerEvent('pointerup',{pointerId:17,clientX:x-80,clientY:y+8,bubbles:true}));
  const snapping=Hyzen3D.inspect();await wait(60);const during=Hyzen3D.inspect();await modelReady();const returned=Hyzen3D.inspect();
- checks.push({name:'3d-small-drag-follows-hand-and-magnetically-returns-without-losing-zoom',ok:displaced.goal.yaw>0&&displaced.pose.yaw>0&&snapping.magnetic&&during.pose.yaw>0&&during.pose.yaw<displaced.pose.yaw&&Math.abs(returned.pose.yaw)<.0001&&Math.abs(returned.pose.elevation-1.05)<.0001&&Math.abs(returned.pose.zoom-enlarged.pose.zoom)<.001});
+ checks.push({name:'3d-drag-between-ten-and-thirty-degrees-returns-without-losing-zoom',ok:displaced.goal.yaw>10*Math.PI/180&&displaced.goal.yaw<30*Math.PI/180&&displaced.pose.yaw>0&&snapping.magnetic&&during.pose.yaw>0&&during.pose.yaw<displaced.pose.yaw&&Math.abs(returned.pose.yaw)<.0001&&Math.abs(returned.pose.elevation-1.05)<.0001&&Math.abs(returned.pose.zoom-enlarged.pose.zoom)<.001});
  canvas.dispatchEvent(new WheelEvent('wheel',{deltaY:100,bubbles:true,cancelable:true}));await modelReady();
  checks.push({name:'3d-wheel-zooms-out-and-reset-restores-fit',ok:Math.abs(Hyzen3D.inspect().pose.zoom-1)<.001});
  Hyzen3D.reset();await modelReady();

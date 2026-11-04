@@ -10,9 +10,9 @@ Connect the keyboard by USB or its 2.4 GHz receiver, then click **Connect**. On 
 
 ## 3D keyboard
 
-The connection screen and keyboard views show the bundled Blender model. Drag to rotate in the direction of your hand. Scroll up over the model to zoom in and down to zoom out. Release within about ±10° of the default angle on both axes to return smoothly to that angle while keeping your zoom. Larger rotations keep their angle. Double-click or use the lower-right reset icon to restore both angle and wheel zoom. Click a cap to select its actual key. Key Test animates the pressed and released caps.
+The connection screen and keyboard views show the bundled Blender model. Drag to rotate in the direction of your hand. Scroll up over the model to zoom in and down to zoom out. Release within about ±30° of the default angle on both axes to return smoothly to that angle while keeping your zoom. Larger rotations keep their angle. Double-click or use the lower-right reset icon to restore both angle and wheel zoom. Click a cap to select its actual key. Key Test animates the pressed and released caps.
 
-The graphic starts at **120%**. Hover it and choose **80–160%** from the lower-right size menu, or use **General → Keyboard graphic size**. It fits the available window space and keeps your choice after restarting. This is a local viewing preference and does not change keyboard configuration. Resetting the view also keeps this size preference; wheel zoom resets when changing views.
+The connection screen uses a fixed **160%** graphic size, fitted to the available window space. Settings views default to **120%**. Hover their graphic and choose **80–160%** from the lower-right size menu, or use **General → Keyboard graphic size**. Your choice is kept after restarting and does not change the connection screen. This is a local viewing preference and does not change keyboard configuration. Resetting the view also keeps this size preference; wheel zoom resets when changing views.
 
 Static lighting renders only when needed. Animated lighting runs at up to 30 fps and pauses when hidden. If WebGL is unavailable, the app falls back to the official product photograph and preserves key selection. The model, renderer and studio lighting are bundled and do not require internet access.
 

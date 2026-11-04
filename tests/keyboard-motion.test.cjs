@@ -4,7 +4,8 @@ test('drag follows the hand by orbiting the camera in the opposite horizontal di
  const base=M.home('home');assert.ok(M.drag(base,-40,0).yaw>base.yaw);assert.ok(M.drag(base,40,0).yaw<base.yaw);
  assert.equal(M.drag(base,10000,0).yaw,-.8);assert.equal(M.drag(base,-10000,0).yaw,.8);
 });
-test('ten-degree magnet is relative to each view and releases beyond its boundary',()=>{
+test('thirty-degree magnet is relative to each view and releases beyond its boundary',()=>{
+ assert.equal(M.magnetAngle,30*Math.PI/180);
  for(const view of ['landing','keyboard']){const base=M.home(view),a=M.magnetAngle;assert.ok(M.nearHome({...base,yaw:base.yaw+a,elevation:base.elevation-a},view));assert.ok(!M.nearHome({...base,yaw:base.yaw+a+.001},view));assert.ok(!M.nearHome({...base,elevation:base.elevation-a-.001},view));}
 });
 test('wheel zoom has symmetric direction, normalized line deltas and hard bounds',()=>{
@@ -14,5 +15,5 @@ test('wheel zoom has symmetric direction, normalized line deltas and hard bounds
  for(let i=0;i<100;i++)value=M.wheel(value,100);assert.equal(value,.65);
 });
 test('magnetic return is continuous and settles exactly at different frame rates',()=>{
- for(const fps of [20,30,60,120]){let p=.15,v=0,moved=false;for(let i=0;i<fps*2;i++){const next=M.spring(p,v,0,1/fps);if(i===0){assert.ok(next.position>0&&next.position<.15);moved=true;}p=next.position;v=next.velocity;}assert.ok(moved);assert.equal(p,0);assert.equal(v,0);}
+ for(const fps of [20,30,60,120]){let p=.5,v=0,moved=false;for(let i=0;i<fps*2;i++){const next=M.spring(p,v,0,1/fps);if(i===0){assert.ok(next.position>0&&next.position<.5);moved=true;}p=next.position;v=next.velocity;}assert.ok(moved);assert.equal(p,0);assert.equal(v,0);}
 });
