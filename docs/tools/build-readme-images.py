@@ -20,7 +20,7 @@ def source_path(name):
         name = {"landing.png": "en-connection.png", "keyboard.png": "en-keyboard.png", "depth-controls.png": "en-actuation.png", "light.png": "en-light.png", "home.png": "en-home.png"}.get(name, name)
     return args.capture / name
 
-for source, name in {"landing.png": "connection.png", "keyboard.png": "key-mapping.png", "depth-controls.png": "actuation.png", "light.png": "lighting.png"}.items():
+for source, name in {"landing.png": "connection.png", "keyboard.png": "key-mapping.png", "depth-controls.png": "actuation.png", "light.png": "lighting.png", "lighting-preview.png": "lighting-preview.png"}.items():
     with Image.open(source_path(source)) as image:
         image.convert("RGB").resize((1280, round(image.height * 1280 / image.width)), Image.Resampling.LANCZOS).save(output / name, optimize=True)
 
@@ -78,7 +78,7 @@ with Image.open(output / "hero.gif") as gif:
         gif.load()
         total += gif.info["duration"]
     report = {"frames": gif.n_frames, "durationMs": total, "size": gif.size, "bytes": (output / "hero.gif").stat().st_size,
-              "source": "Lofree HUB 1.2.0 read-only native app captures", "method": "Position animation of unchanged real screenshots"}
+              "source": "Lofree HUB 1.3.0 read-only native app captures", "method": "Position animation of unchanged real screenshots"}
 print(json.dumps(report))
 for language in ["ko", "en"]:
     with Image.open(args.capture / f"{language}-general.png") as image:

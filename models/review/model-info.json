@@ -1,0 +1,31 @@
+{
+  "blender": "4.5.9 LTS",
+  "key_groups": 67,
+  "body_width_mm": 330.9,
+  "body_depth_mm": 130.2,
+  "overall_depth_mm": 142.3,
+  "deck_angle_degrees": 12,
+  "side_profile": "pentagonal; lower front of tilted slab clipped horizontally",
+  "contact_plane_z_mm": 0.8,
+  "contact_break_y_mm": -26.522033102276673,
+  "front_flat_length_mm": 38.57796689772332,
+  "cap_top": "flat inclined plane",
+  "row_profile": "middle row LOWER, front and back rows higher",
+  "row_center_drop_mm": 0.8,
+  "row_heights_mm": [
+    10.4,
+    9.8,
+    9.6,
+    9.8,
+    10.4
+  ],
+  "row_top_angles_degrees": [
+    2.4,
+    1.2,
+    0,
+    -1.2,
+    -2.4
+  ],
+  "app_modified": false,
+  "note": "The row profile is relative to the housing deck. Exterior reconstructed from photographs, not manufacturer CAD."
+}

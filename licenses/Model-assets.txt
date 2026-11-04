@@ -1,0 +1,21 @@
+HYZEN67 exterior model
+
+The Blender scene and generation scripts in models/ are an independently
+constructed exterior study based on Lofree's published product photographs.
+They are not manufacturer CAD and are not represented as an official Lofree asset.
+Product design, Lofree marks and product photographs belong to their respective
+rights holders. Downloaded modelling-reference photographs are not redistributed.
+
+Primary reference: https://lofree.co.jp/products/hyzen-gaming-keyboard
+Reference image URLs: models/references/sources.json
+
+The English Lofree marking is the original official logo already included in
+source/web/lofree-logo.png. See the existing Lofree asset notice and REFERENCE.md.
+The original official driver product image, source/web/hyzen-product.webp, is
+also used unchanged as a shared roof-color texture. See Product-image.txt.
+Packed font outlines use the bundled Manrope and Pretendard fonts. Their license
+notices are included alongside this file.
+
+The app renders the exported GLB locally using Three.js 0.187.0, under the
+MIT license in Three.js-MIT.txt. Studio lighting uses the CC0 HDRI described
+in Studio-HDRI-CC0.txt. No hosted viewer or runtime CDN is required.

@@ -48,7 +48,7 @@ function refreshLocale(){
  for(const root of [$('#caption'),$('#nav'),$('#connection'),$('#officialLink'),$('#retryApply'),$('#confirmDialog')])L.localize(root);
  for(const [id,title]of nav)$('#nav [data-page="'+id+'"] span').textContent=t(title);
  $('#profileSelect').innerHTML=Array.from({length:7},(_,i)=>option(i,'프로필 '+String(i+1).padStart(2,'0'),device.profile)).join('');
- $('#connectVisual').innerHTML=L.html(previewKeyboard());
+ $('#connectVisual').innerHTML=L.html(previewKeyboard());window.Hyzen3D?.refresh();
  setConnectionPhase(state.connectionPhase,state.connectionMessage||'');updateConnection();
  if(state.error)$('#notice').textContent=t(state.error);
  if(toastMessage&&!$('#toast').hidden)$('#toast').textContent=t(toastMessage);
@@ -67,8 +67,9 @@ async function switchLanguage(language){
  $('main').scrollTop=scroll;$('#content [data-language="'+language+'"]').focus({preventScroll:true});
 }
 function previewKeyboard(){
- return '<div class="keyboard product-visual"><img id="productPreview" src="hyzen-product.webp" alt="Lofree Hyzen 67 — 투명 키캡과 금속 하우징" width="3335" height="1400" draggable="false"></div>';
+ return '<div class="keyboard product-visual model-host" data-model-view="landing"><img id="productPreview" src="hyzen-product.webp" alt="Lofree Hyzen 67 — 투명 키캡과 금속 하우징" width="3335" height="1400" draggable="false">'+modelReset()+'</div>';
 }
+function modelReset(){return '<button class="model-reset" data-model-reset aria-label="'+t('3D 보기 초기화')+'" title="'+t('드래그하여 회전 · 두 번 클릭하여 초기화')+'">'+icon('refresh')+'</button>';}
 function isLanding(){return document.body.dataset.screen==='landing';}
 function setConnectionPhase(phase,message=''){
  state.connectionPhase=phase;state.connectionMessage=message;$('#connectScreen').dataset.phase=phase;
@@ -82,7 +83,7 @@ function setConnectionPhase(phase,message=''){
 function setVisibleScreen(name){
  const settings=name==='settings',shell=$('.shell'),landing=$('#connectScreen');
  shell.hidden=!settings;shell.inert=!settings;landing.hidden=settings;landing.inert=settings;
- document.body.dataset.screen=name;
+ document.body.dataset.screen=name;window.Hyzen3D?.refresh();
 }
 async function transitionScreen(name){
  if(document.body.dataset.screen===name)return;
@@ -109,10 +110,10 @@ function keyboard(selectable=true){
   const i=device.index(k.keyCode),locked=!!k.forbidEdit||i<0,binding=i>=0?device.binding(i,state.layer):[],changed=state.page==='keyboard'&&binding.length&&P.hex(binding)!==k.keyCode;
   const x=(Number(k.left)+40)/960*100,y=(Number(k.top)+66)/412*100,w=Number(k.width)/960*100,h=Number(k.height)/412*100;
   const label=k.name+(changed?' → '+labelFor(binding):'')+(locked?' · 고정 키':'');
-  return `<button class="key photo-key ${state.selected.has(i)?'selected':''} ${locked?'locked':''}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%" data-key="${i}" data-event="${esc(eventForCode(k.keyCode))}" aria-label="${esc(label)}" title="${esc(label)}" ${locked&&selecting||!selectable?'disabled':''} aria-pressed="${state.selected.has(i)}">${changed?`<span class="mapping-badge">${esc(labelFor(binding))}</span>`:''}</button>`;
+  return `<button class="key photo-key ${state.selected.has(i)?'selected':''} ${locked?'locked':''}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%" data-key="${i}" data-model-key="${k.keyCode}" data-event="${esc(eventForCode(k.keyCode))}" aria-label="${esc(label)}" title="${esc(label)}" ${locked&&selecting||!selectable?'disabled':''} aria-pressed="${state.selected.has(i)}">${changed?`<span class="mapping-badge">${esc(labelFor(binding))}</span>`:''}</button>`;
  }).join('');
  const caption=state.page==='test'?'키를 누르면 해당 위치가 밝아집니다.':selecting?(state.selected.size?`${state.selected.size}개 선택 · ${[...state.selected].map(nameForIndex).join(', ')}`:'설정할 키를 선택하세요.'):'',selection=selecting?'<div class="selection-chips"><button class="chip" data-select="wasd">WASD</button><button class="chip" data-select="all">전체</button><button class="chip" data-select="none">해제</button></div>':'';
- return `<article class="card keyboard-card"><div class="keyboard photo-keyboard" role="group" aria-label="Hyzen 67 키보드"><img class="keyboard-photo" src="hyzen-product.webp" alt="Lofree Hyzen 67" width="3335" height="1400" draggable="false">${keys}</div>${caption||selection?`<div class="keyboard-caption"><span>${caption}</span>${selection}</div>`:''}</article>`;
+ return `<article class="card keyboard-card"><div class="keyboard photo-keyboard model-host" data-model-view="${state.page}" role="group" aria-label="Hyzen 67 키보드"><img class="keyboard-photo" src="hyzen-product.webp" alt="Lofree Hyzen 67" width="3335" height="1400" draggable="false">${keys}${modelReset()}</div>${caption||selection?`<div class="keyboard-caption"><span>${caption}</span>${selection}</div>`:''}</article>`;
 }
 function eventForCode(code){return catalogue.find(k=>P.hex(k.code)===code)?.event||'';}
 function option(value,label,current){return `<option value="${esc(value)}" ${String(value)===String(current)?'selected':''}>${esc(label)}</option>`;}
@@ -162,7 +163,8 @@ function advanced(){const type=state.advanced,desc={MT:'짧게 누를 때와 길
  else form=`<div class="advanced-form"><div class="field"><label for="partnerKey">함께 동작할 키</label><select id="partnerKey">${physical.filter(k=>!k.forbidEdit&&device.index(k.keyCode)>=0).map(k=>option(device.index(k.keyCode),k.name,device.index('20 00 16'))).join('')}</select></div><div class="field"><label for="advancedPriority">${type==='SOCD'?'우선순위':type==='HT'?'연결 방향':'입력 비교'}</label><select id="advancedPriority">${(type==='SOCD'?[[0,'나중에 누른 키 우선'],[1,'선택한 키 우선'],[2,'상대 키 우선'],[3,'중립 · 두 키 해제']]:type==='HT'?[[0,'양방향'],[1,'선택한 키 → 상대 키'],[2,'상대 키 → 선택한 키']]:[[0,'더 깊게 누른 키 우선']]).map(([v,l])=>option(v,l,0)).join('')}</select></div></div>${range('advancedMm','동작 시작 깊이',1,device.minMm,device.maxMm,.01,'mm')}${toggle('advancedRt','빠른 입력 사용','연결된 두 키에 빠른 반응을 적용합니다.',false)}`;
  return keyboard()+`<article class="card"><div class="section-heading"><h2>고급 키</h2><button data-action="clearAdvanced">일반 키로 복원</button></div><div class="pill-tabs">${Object.keys(desc).map(t=>`<button data-advanced="${t}" class="${type===t?'active':''}">${t}</button>`).join('')}</div><p class="advanced-description">${desc[type]}</p>${form}${actionRow('saveAdvanced','선택한 키에 저장','고급 키는 기본 레이어에서 동작합니다. 게임 규정에 맞게 설정하세요.')}</article>`;}
 const effectNames={constantlyOn:'고정',breathe:'숨쉬기',singleLiang:'누른 키',singleOff:'꺼지는 키',heartbeat:'심장 박동',ripple:'물결',alternate:'교차',raindrop:'빗방울',conversion:'색 전환',piano:'피아노',wave:'웨이브',spin:'회전',meteor:'유성',OpenClose:'열림과 닫힘',storeLibra:'쌓기'};
-function lights(){
+function lights(){return keyboard(false)+lightingControls();}
+function lightingControls(){
  const group=state.lightGroup,list=group==='back'?C.mainBackLight:group==='front'?C.prepositionLight:C.dongleLight,v=state.lightDraft||device.light(group);state.lightDraft=v;
  const effect=list.find(e=>parseInt(e.command,16)===v.mode)||list[0],name=effectNames[effect.tooltip]||effect.tooltip;
  const effects=`<div class="effect-grid">${list.map(e=>`<button class="effect ${parseInt(e.command,16)===v.mode?'active':''}" data-effect="${e.command}" aria-pressed="${parseInt(e.command,16)===v.mode}">${icon(e.tooltip==='breathe'?'moon':e.tooltip==='wave'?'link':'light')}<span>${effectNames[e.tooltip]||e.tooltip}</span></button>`).join('')}</div>`;
@@ -186,7 +188,7 @@ function settings(){
  const language=`<div class="setting-row"><div class="setting-label" id="languageLabel">언어</div><div class="language-toggle" role="group" aria-labelledby="languageLabel">${['ko','en'].map(code=>`<button data-language="${code}" aria-pressed="${L.language===code}">${code.toUpperCase()}</button>`).join('')}</div></div>`;
  return `<article class="card">${language}<div class="setting-row"><label for="axisMode">스위치 모드</label><select id="axisMode">${option(2,'MAG',f[56])}${option(1,'MEC',f[56])}</select></div>${fold('키 잠금 · 고속 응답',locks)}${actionRow('saveMode')}</article>${[['절전',sleep],['폴링레이트',rate],['프로필 · 연결',profile],[cap.firmware?'업데이트 · 초기화':'초기화',firmware]].map(([title,body])=>`<details class="card option-card"><summary>${title}</summary><div class="fold-body">${body}</div></details>`).join('')}`;
 }
-function help(){return `<article class="card help-card"><h2>Lofree HUB 1.2.0</h2><p>Lofree Hyzen 67용 Windows 제어 프로그램입니다. USB 또는 2.4GHz로 연결해 키 매핑, 입력 깊이, 조명 등을 설정합니다.</p></article>${[['연결과 프로필','USB 유선 또는 2.4GHz 수신기로 연결합니다. Bluetooth에서는 설정용 HID 인터페이스가 제공되지 않습니다. 상단에서 7개 프로필을 전환할 수 있고, 키 매핑과 조명 등은 현재 프로필에 저장합니다.'],['저장과 설정 확인','변경한 값은 자동으로 키보드에 적용합니다. 연속 조작은 짧게 묶어 전송하고, 같은 값을 다시 읽어 확인합니다. 하단에서 적용 상태를 확인하세요. 실패하면 ‘다시 적용’을 누르거나 새로고침으로 장치 값을 다시 읽을 수 있습니다.'],['키 매핑과 Fn 레이어','키를 선택한 뒤 새 동작을 지정합니다. Ctrl을 누르며 선택하면 여러 키를 편집할 수 있습니다. Fn과 고정 키는 변경할 수 없습니다. 네 가지 Fn 레이어는 프로필 전체에서 공유됩니다.'],['입력 깊이와 고급 키','MAG 모드에서는 장치의 보정 값으로 mm와 원시 값을 변환합니다. RT는 누름·해제 이동 거리를 따로 조절하고, MT·TGL·DKS·RS·SOCD·HT를 설정할 수 있습니다. 두 키 기능은 서로 다른 키를 연결해야 합니다.'],['키 테스트와 매크로','입력 기록은 이 프로그램 창이 활성 상태일 때만 메모리에 보관합니다. 창을 벗어나면 녹화를 중지합니다. Fn이나 Windows가 가로채는 단축키는 일반 입력 이벤트에 나타나지 않을 수 있습니다. 매크로는 녹화를 중지하면 자동 적용합니다. 키 매핑에서 M1~M28을 지정하세요.'],['보정 · 펌웨어 · 초기화','이 버전의 보정, 펌웨어 쓰기, 공장 초기화는 공식 드라이버로 연결합니다. 프로그램에서 공식 도구를 열면 HID 연결을 먼저 해제합니다. 보정은 유선 MAG 모드에서 진행하세요.'],['백업 범위','내보내기는 현재 프로필의 기본 레이어 매핑과 기능 설정을 포함합니다. Fn 레이어·고급 키·입력 깊이·매크로 데이터는 이 백업 형식에 포함되지 않습니다. 원본 JSON 파일을 별도로 보관하세요.']].map(([t,p])=>`<details class="card help-card"><summary>${t}</summary><p>${p}</p></details>`).join('')}<button data-action="official">Lofree 공식 Hyzen 드라이버 ↗</button>`;}
+function help(){return `<article class="card help-card"><h2>Lofree HUB 1.3.0</h2><p>Lofree Hyzen 67용 Windows 제어 프로그램입니다. USB 또는 2.4GHz로 연결해 키 매핑, 입력 깊이, 조명 등을 설정합니다.</p></article>${[['연결과 프로필','USB 유선 또는 2.4GHz 수신기로 연결합니다. Bluetooth에서는 설정용 HID 인터페이스가 제공되지 않습니다. 상단에서 7개 프로필을 전환할 수 있고, 키 매핑과 조명 등은 현재 프로필에 저장합니다.'],['저장과 설정 확인','변경한 값은 자동으로 키보드에 적용합니다. 연속 조작은 짧게 묶어 전송하고, 같은 값을 다시 읽어 확인합니다. 하단에서 적용 상태를 확인하세요. 실패하면 ‘다시 적용’을 누르거나 새로고침으로 장치 값을 다시 읽을 수 있습니다.'],['키 매핑과 Fn 레이어','키를 선택한 뒤 새 동작을 지정합니다. Ctrl을 누르며 선택하면 여러 키를 편집할 수 있습니다. Fn과 고정 키는 변경할 수 없습니다. 네 가지 Fn 레이어는 프로필 전체에서 공유됩니다.'],['입력 깊이와 고급 키','MAG 모드에서는 장치의 보정 값으로 mm와 원시 값을 변환합니다. RT는 누름·해제 이동 거리를 따로 조절하고, MT·TGL·DKS·RS·SOCD·HT를 설정할 수 있습니다. 두 키 기능은 서로 다른 키를 연결해야 합니다.'],['키 테스트와 매크로','입력 기록은 이 프로그램 창이 활성 상태일 때만 메모리에 보관합니다. 창을 벗어나면 녹화를 중지합니다. Fn이나 Windows가 가로채는 단축키는 일반 입력 이벤트에 나타나지 않을 수 있습니다. 매크로는 녹화를 중지하면 자동 적용합니다. 키 매핑에서 M1~M28을 지정하세요.'],['보정 · 펌웨어 · 초기화','이 버전의 보정, 펌웨어 쓰기, 공장 초기화는 공식 드라이버로 연결합니다. 프로그램에서 공식 도구를 열면 HID 연결을 먼저 해제합니다. 보정은 유선 MAG 모드에서 진행하세요.'],['백업 범위','내보내기는 현재 프로필의 기본 레이어 매핑과 기능 설정을 포함합니다. Fn 레이어·고급 키·입력 깊이·매크로 데이터는 이 백업 형식에 포함되지 않습니다. 원본 JSON 파일을 별도로 보관하세요.']].map(([t,p])=>`<details class="card help-card"><summary>${t}</summary><p>${p}</p></details>`).join('')}<button data-action="official">Lofree 공식 Hyzen 드라이버 ↗</button>`;}
 async function loadAdvanced(prefetched=undefined){if(state.page!=='advanced'||firstSelected()<0)return;const v=prefetched===undefined?await device.advancedConfig(firstSelected()):prefetched;if(v){state.advanced=v.kind;render();if(v.tap)$('#advancedTap').value=P.hex(v.tap);if(v.hold)$('#advancedHold').value=P.hex(v.hold);if(v.delay!==undefined)$('#advancedDelay').value=v.delay;if(v.partner!==undefined)$('#partnerKey').value=v.partner;if(v.priority!==undefined)$('#advancedPriority').value=v.priority;if(v.mm!==undefined){$('#advancedMm').value=v.mm;syncInstrument($('#advancedMm'),true);}if(v.rtEnabled!==undefined)$('#advancedRt').checked=v.rtEnabled;if(v.rows)for(let n=0;n<4;n++){$('#dksKey'+n).value=P.hex(v.rows[n].code);$('#dksPoint'+n).value=v.points[n].toFixed(2);}}}
 async function navigate(page){
  if(!device.connected||!availablePage(page))return;
@@ -210,7 +212,7 @@ async function navigate(page){
 function render(){validationError=null;document.body.dataset.page=state.page;
  if(!device.connected){$('#content').replaceChildren();if(!isLanding())setVisibleScreen('landing');if(state.connectionPhase==='ready')setConnectionPhase('idle');updateConnection();return;}
  const views={home,keyboard:keymap,depth,advanced,light:lights,macro:macroPage,test:testPage,calibration,settings,help};
- $('#content').innerHTML=L.html(views[state.page]());syncInstruments();HyzenBlockGlow.refresh($('#content'));
+ $('#content').innerHTML=L.html(views[state.page]());syncInstruments();HyzenBlockGlow.refresh($('#content'));window.Hyzen3D?.refresh();
  for(const paragraph of $$('#content .advanced-description,#content>p.small.muted')){const details=document.createElement('details');details.className='inline-help';details.innerHTML=L.html('<summary>사용 안내</summary>');paragraph.before(details);details.append(paragraph);}
  updateConnection();if(state.page==='test')paintTest();
 }
@@ -246,7 +248,7 @@ const actions={
  clearTest:async()=>{state.testLog=[];state.visited.clear();state.pressed.clear();state.testCount=0;state.lastEvent=0;render();}
 };
 function stopRecording(){if(!state.recording)return;state.recording=false;const m=state.macroDraft,down=new Map();for(const a of m.actions){let k=(a.modifier?'m':'k')+a.hid;a.down?down.set(k,a):down.delete(k);}for(const a of down.values())m.actions.push({...a,down:false,delay:0});scheduleAuto('macro');}
-function paintTest(){for(const k of $$('.key')){k.classList.toggle('down',state.pressed.has(k.dataset.event));k.classList.toggle('visited',state.visited.has(k.dataset.event));}}
+function paintTest(){for(const k of $$('.key')){k.classList.toggle('down',state.pressed.has(k.dataset.event));k.classList.toggle('visited',state.visited.has(k.dataset.event));}window.Hyzen3D?.sync();}
 document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.caption){rpc('caption',{command:b.dataset.caption});return;}if(b.id==='cancelConfirm'||b.id==='acceptConfirm'){const resolve=state.confirm;state.confirm=null;$('#confirmDialog').close();resolve?.(b.id==='acceptConfirm');return;}if(state.busy)return;
  if(b.dataset.language){await work(()=>switchLanguage(b.dataset.language));return;}
  if(b.dataset.page){await work(()=>navigate(b.dataset.page));return;}
@@ -323,7 +325,12 @@ window.runVerification=async()=>{
  state.verifying=true;await live.pause();const bootLanguage=L.language,bootLabel=$('#startConnectLabel').textContent;L.setLanguage('ko');refreshLocale();HyzenBlockGlow.beginVerification();
  const checks=[],phases=[],wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  const settled=async()=>{for(let i=0;i<300&&state.busy;i++)await wait(100);if(state.busy)throw Error('Connection did not settle');};
- const screenshot=async name=>{await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);await rpc('capture',{name});};
+ const modelReady=async()=>{
+  for(let i=0;i<100&&!window.Hyzen3D;i++)await wait(50);
+  if(!window.Hyzen3D)throw Error('3D viewer did not initialize');
+  await Hyzen3D.ready();for(let i=0;i<100&&Hyzen3D.inspect().scheduled;i++)await wait(30);
+ };
+ const screenshot=async name=>{if(isLanding()||$('#content .model-host')){await modelReady();await wait(360);}await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);await rpc('capture',{name});};
  const landingOnly=()=>isLanding()&&!$('#connectScreen').hidden&&$('.shell').hidden&&$('.shell').inert;
  const windowMetrics=await rpc('windowMetrics');const bootPreference=await rpc('preferences');checks.push({name:'native-language-preference-is-loaded-at-startup',ok:bootPreference.language===bootLanguage&&bootLabel===(bootLanguage==='en'?'Connect':'연결'),language:bootLanguage});
  checks.push({name:'webview-fills-window-without-black-inset',ok:windowMetrics.margin===0&&Math.abs(windowMetrics.left)<1&&Math.abs(windowMetrics.top)<1&&Math.abs(windowMetrics.width-windowMetrics.windowWidth)<1&&Math.abs(windowMetrics.height-windowMetrics.windowHeight)<1,metrics:windowMetrics});
@@ -331,6 +338,8 @@ window.runVerification=async()=>{
  const product=$('#productPreview');if(product&&!product.complete)await new Promise(resolve=>{product.addEventListener('load',resolve,{once:true});product.addEventListener('error',resolve,{once:true});});
  checks.push({name:'startup-no-auto-connect',ok:landingOnly()&&!device.connected&&!device.info&&pending.size===0&&$('#content').children.length===0});
  checks.push({name:'official-product-image',ok:product?.complete&&product.naturalWidth===3335&&physical.length===67});
+ await modelReady();const initialModel=Hyzen3D.inspect();
+ checks.push({name:'blender-model-loads-before-manual-connection',ok:initialModel.state==='ready'&&initialModel.keys===67&&initialModel.loads===1&&landingOnly()&&!device.connected&&pending.size===0,model:initialModel});
  await screenshot('landing');
  const realRpc=device.rpc;let attempts=0;
  device.rpc=async(action,args)=>{if(action==='connect'){attempts++;throw Error('검증용 연결 실패');}return realRpc(action,args);};
@@ -367,20 +376,42 @@ window.runVerification=async()=>{
  for(const page of nav.map(n=>n[0]).filter(availablePage)){
   try{
    await navigate(page);pageTransitions.push({page,animated:HyzenPageMotion.status.animated,phase:HyzenPageMotion.status.phase});await wait(30);const content=$('#content');
-   if(['home','keyboard','depth','advanced','test'].includes(page)){
+   if(['home','keyboard','depth','advanced','light','test'].includes(page)){
+    await modelReady();
     const image=$('.keyboard-photo'),photo=$('.photo-keyboard'),bounds=photo.getBoundingClientRect();
-    photoViews.push({page,ok:image?.complete&&image.naturalWidth===3335&&$$('.photo-key').length===67&&!$('.keyboard-frame')&&!$('.knob')&&$$('.photo-key').every(key=>{const r=key.getBoundingClientRect();return r.left>=bounds.left&&r.top>=bounds.top&&r.right<=bounds.right+1&&r.bottom<=bounds.bottom+1;})});
+    const view=Hyzen3D.inspect(),wrong=physical.filter(key=>{const p=Hyzen3D.keyCenter(key.keyCode);return !p||Hyzen3D.pick(p.x,p.y)!==key.keyCode;}).map(key=>key.name);
+    photoViews.push({page,ok:view.state==='ready'&&view.keys===67&&view.loads===1&&view.canvasCount===1&&wrong.length===0&&image?.complete&&image.naturalWidth===3335&&$$('.photo-key').length===67&&$$('.photo-key').every(key=>{const r=key.getBoundingClientRect();return r.left>=bounds.left&&r.top>=bounds.top&&r.right<=bounds.right+1&&r.bottom<=bounds.bottom+1;}),wrong});
    }
    if(page==='keyboard'){
-    const key=$('.photo-key[data-event="Escape"]'),rect=key.getBoundingClientRect(),hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2),keyIndex=Number(key.dataset.key);
-    key.click();const selected=$('.photo-key[data-event="Escape"]');
-    checks.push({name:'photo-overlay-selects-real-key',ok:hit===key&&state.selected.has(keyIndex)&&selected.getAttribute('aria-pressed')==='true'&&!!$('.keyboard-photo')&&getComputedStyle(selected).backgroundColor.startsWith('rgba(')});
+    const key=$('.photo-key[data-event="Escape"]'),p=Hyzen3D.keyCenter(key.dataset.modelKey),canvas=$('.keyboard-canvas'),keyIndex=Number(key.dataset.key),serialBefore=serial;
+    canvas.dispatchEvent(new PointerEvent('pointerdown',{pointerId:1,button:0,clientX:p.x,clientY:p.y,bubbles:true}));
+    canvas.dispatchEvent(new PointerEvent('pointerup',{pointerId:1,button:0,clientX:p.x,clientY:p.y,bubbles:true}));await modelReady();
+    const selected=$('.photo-key[data-event="Escape"]');
+    checks.push({name:'3d-ray-selects-real-key-without-device-write',ok:document.elementFromPoint(p.x,p.y)===canvas&&state.selected.has(keyIndex)&&selected.getAttribute('aria-pressed')==='true'&&Hyzen3D.keyState(key.dataset.modelKey).light>.4&&serial===serialBefore});
+    const r=canvas.getBoundingClientRect(),before=Hyzen3D.inspect();
+    canvas.dispatchEvent(new PointerEvent('pointerdown',{pointerId:2,button:0,clientX:r.left+100,clientY:r.top+100,bubbles:true}));
+    canvas.dispatchEvent(new PointerEvent('pointermove',{pointerId:2,clientX:r.left+180,clientY:r.top+75,bubbles:true}));
+    canvas.dispatchEvent(new PointerEvent('pointerup',{pointerId:2,clientX:r.left+180,clientY:r.top+75,bubbles:true}));await modelReady();
+    const rotated=Hyzen3D.inspect();await screenshot('model-orbit');$('[data-model-reset]').click();await modelReady();const restored=Hyzen3D.inspect();
+    checks.push({name:'3d-drag-rotates-and-reset-restores-view-without-selecting',ok:Math.abs(rotated.pose.yaw-before.pose.yaw)>.3&&Math.abs(restored.pose.yaw)<.001&&state.selected.size===1&&state.selected.has(keyIndex)});
+    canvas.dispatchEvent(new PointerEvent('pointerleave'));await modelReady();let idle=Hyzen3D.inspect().rendered,quiet=0;
+    for(let i=0;i<20&&quiet<3;i++){await wait(100);const view=Hyzen3D.inspect();quiet=view.rendered===idle&&!view.scheduled?quiet+1:0;idle=view.rendered;}
+    checks.push({name:'3d-renderer-stops-when-idle',ok:quiet>=3});
+    const contextControl=canvas.getContext('webgl2').getExtension('WEBGL_lose_context');
+    if(contextControl){
+     contextControl.loseContext();await wait(100);
+     const fallback=canvas.closest('.model-host').dataset.modelState==='fallback'&&getComputedStyle(canvas).display==='none'&&Math.abs(parseFloat($('.photo-key[data-event="Escape"]').style.left)-(Number(physical[0].left)+40)/960*100)<.0001;
+     checks.push({name:'3d-context-loss-restores-photo-and-original-key-targets',ok:fallback});
+     contextControl.restoreContext();await wait(150);await modelReady();
+     checks.push({name:'3d-context-restore-recovers-model-and-studio-lighting',ok:Hyzen3D.inspect().state==='ready'&&Hyzen3D.inspect().loads===1});
+    }
     $('[data-select="wasd"]').click();
    }
    if(page==='test'){
     document.dispatchEvent(new KeyboardEvent('keydown',{code:'KeyA',key:'a',bubbles:true,cancelable:true}));
-    const down=$('.photo-key[data-event="KeyA"]').classList.contains('down');document.dispatchEvent(new KeyboardEvent('keyup',{code:'KeyA',key:'a',bubbles:true,cancelable:true}));
-    checks.push({name:'photo-key-test-highlights-and-releases',ok:down&&!$('.photo-key[data-event="KeyA"]').classList.contains('down')&&!!$('.keyboard-photo')});
+    await modelReady();const key=$('.photo-key[data-event="KeyA"]'),down=key.classList.contains('down'),pressed=Hyzen3D.keyState(key.dataset.modelKey);
+    await screenshot('model-key-down');document.dispatchEvent(new KeyboardEvent('keyup',{code:'KeyA',key:'a',bubbles:true,cancelable:true}));await modelReady();
+    checks.push({name:'3d-key-test-presses-highlights-and-releases-cap',ok:down&&!$('.photo-key[data-event="KeyA"]').classList.contains('down')&&pressed.pressed>.99&&pressed.light>.85&&Math.abs(pressed.offset-1.2)<.01&&Hyzen3D.keyState(key.dataset.modelKey).pressed<.01});
    }
    if(page==='home'){
     checks.push({name:'reference-surfaces',ok:getComputedStyle(document.body).backgroundImage.includes('radial-gradient')&&parseFloat(getComputedStyle($('.stat')).borderRadius)>=27&&!!$('.stat .dot-readout')});
@@ -417,6 +448,7 @@ window.runVerification=async()=>{
     checks.push({name:'deadzone-collapsed-fields-preserved',ok:!$('.actuation-card details').open&&!!$('#deadTop')&&!!$('#deadBottom')});
    }
    if(page==='light'){
+    await (await import('./model-verification.js')).verifyLighting({checks,screenshot,wait,modelReady});
     const picker=$('.effect-picker'),extra=$('.lighting-card>.option-fold:not(.effect-picker)');
     checks.push({name:'light-secondary-controls-collapsed',ok:!picker.open&&!extra.open&&$$('.effect').every(e=>e.getClientRects().length===0)&&!!$('#customColor')});
 
@@ -475,7 +507,7 @@ window.runVerification=async()=>{
   }catch(error){checks.push({name:page,ok:false,error:error.message});}
  }
  checks.push({name:'all-menu-pages-use-transition',ok:pageTransitions.length===nav.filter(([page])=>availablePage(page)).length&&pageTransitions.every(item=>item.animated&&item.phase==='idle')});
- checks.push({name:'official-photo-on-all-keyboard-views',ok:photoViews.length===5&&photoViews.every(item=>item.ok),views:photoViews});
+ checks.push({name:'one-cached-3d-model-and-67-accurate-keys-on-all-keyboard-views',ok:photoViews.length===6&&photoViews.every(item=>item.ok),views:photoViews});
  checks.push({name:'all-dot-readouts-have-hover-blocks',ok:dotCoverage.length>=8&&dotCoverage.every(Boolean),readouts:dotCoverage.length});
 
  // Rendering and inspecting values must never enqueue a write.

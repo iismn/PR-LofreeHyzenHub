@@ -8,6 +8,12 @@ Connect the keyboard by USB or its 2.4 GHz receiver, then click **Connect**. On 
 
 ![Connection screen](images/connection.png)
 
+## 3D keyboard
+
+The connection screen and keyboard views show the bundled Blender model. Drag to rotate, then double-click or use the lower-right reset icon to restore the view. Click a cap to select its actual key. Key Test animates the pressed and released caps.
+
+Static lighting renders only when needed. Animated lighting runs at up to 30 fps and pauses when hidden. If WebGL is unavailable, the app falls back to the official product photograph and preserves key selection. The model, renderer and studio lighting are bundled and do not require internet access.
+
 ## Choose a language
 
 Open **General → Language** and select **KO** or **EN**. With Korean selected, the path is **일반 → 언어**. Menus, key lists, help, status messages and app errors change together. The selection is kept after restarting.
@@ -26,7 +32,7 @@ Do not connect the official driver at the same time. If the keyboard does not re
 
 ## Mapping and profiles
 
-Select one of seven profiles at the top. In **Key Mapping**, choose a key on the photograph and then its new action. Hold **Ctrl** for multiple selection or use **WASD / All**. Fn and fixed keys cannot be remapped.
+Select one of seven profiles at the top. In **Key Mapping**, choose a key on the model and then its new action. Hold **Ctrl** for multiple selection or use **WASD / All**. Fn and fixed keys cannot be remapped.
 
 The base layer belongs to the current profile. Windows Fn / Fn+Shift and macOS Fn / Fn+Shift are four layers shared across profiles.
 
@@ -43,6 +49,8 @@ In MAG mode, set actuation depth, separate press/release Rapid Trigger distances
 ## Lighting
 
 Choose the keyboard backlight, front light bar or receiver. Adjust effects, brightness, color and the supported detail options. Effect and detail sections start collapsed. Hover a block to light its tick marks and dot readout.
+
+The 3D keyboard previews backlight and front-strip color, brightness and effects. Zero brightness turns that glow off. Animation phase is local to the preview; key-reactive effects use input delivered to this app. Receiver lighting is independent of the keyboard model.
 
 ![Lighting](images/lighting.png)
 

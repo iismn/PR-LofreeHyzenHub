@@ -1,5 +1,16 @@
 # Validation
 
+## 1.3.0 3D keyboard and lighting preview
+
+- **47 Node.js tests** passed, including the 67-key GLB/device-code match, photo regions, Backspace/Enter proportions, bundled dependencies, color/brightness limits, direction and reactive-effect decay.
+- **87/87 read-only native UI checks** passed at both 1320×900 and 1040×720. Reports: [default](validation/v1.3.0-windows.json) / [minimum](validation/v1.3.0-windows-min.json).
+- The native checks loaded the real bundled model before manual connection, ray-tested all 67 keys on all six keyboard views, selected a key, rotated/reset the model, animated a pressed cap, and checked idle rendering and WebGL loss/recovery.
+- Lighting controls were checked against the key and strip preview independently, including zero brightness. Colorful screenshots use local, read-only lighting fixtures. The native bridge blocked physical setting writes, and the reports recorded **zero verification writes**.
+- Eight native preference checks passed. The minimum-window run started from the previously saved EN preference in a new process. Both runs use isolated preference and WebView2 folders.
+- **11 Blender geometry checks** passed: planar and watertight caps, the 0.8 mm row dip, clipped watertight housing, wide-key dimensions and complete per-key photograph regions. See the [geometry report](../models/review/geometry-validation.json).
+- A separate browser check confirmed moving LED effects animate while visible and stop when hidden. Static scenes stopped rendering after settling.
+- Device protocol and HID input behavior were not changed. The physical validation scope below remains applicable. Preview effect phases are local and do not measure or synchronize hardware animation timing.
+
 ## 1.2.0 language update
 
 - **40 pure Node.js tests** passed, including translation patterns and existing device-control tests.

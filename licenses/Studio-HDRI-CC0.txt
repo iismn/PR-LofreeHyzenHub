@@ -1,0 +1,12 @@
+Studio Small 09 HDRI
+Author: Sergej Majboroda / Poly Haven
+License: CC0 1.0 Universal (public domain dedication)
+https://polyhaven.com/a/studio_small_09
+https://polyhaven.com/license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Bundled original 1K RGBE HDR file, downloaded 2026-11-04:
+https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_09_1k.hdr
+SHA-256: e7cfda5f4e98e623db12b8bfd0184e048488e4855d9c83e2751fb44a32e80c45
+
+The asset is bundled locally. The app does not use the Poly Haven API at runtime.

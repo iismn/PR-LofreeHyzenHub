@@ -1,0 +1,465 @@
+{
+  "checks": [
+    {
+      "name": "67 distinct physical key groups",
+      "ok": true
+    },
+    {
+      "name": "Backspace is 2U and Enter is 2.25U at 19.05 mm pitch",
+      "ok": true
+    },
+    {
+      "name": "67 photo roof regions are complete and stay inside the product image",
+      "ok": true
+    },
+    {
+      "name": "67 individual key tops are planar",
+      "ok": true
+    },
+    {
+      "name": "67 watertight hollow cap shells",
+      "ok": true
+    },
+    {
+      "name": "five row inclinations follow a dip, not a crown",
+      "ok": true
+    },
+    {
+      "name": "middle row is only 0.8 mm lower than both end rows, relative to deck",
+      "ok": true,
+      "measured_center_drop_mm": 0.7999996457781116,
+      "row_heights_mm": [
+        10.400000027247843,
+        9.799999986376083,
+        9.600000381469727,
+        9.79999998637608,
+        10.400000027247833
+      ]
+    },
+    {
+      "name": "logo image is packed",
+      "ok": true
+    },
+    {
+      "name": "body width matches configured reference",
+      "ok": true
+    },
+    {
+      "name": "main side face itself has a horizontal clipped lower section",
+      "ok": true,
+      "measured_flat_run_mm": 38.34798240661621,
+      "contact_plane_z_mm": 0.8
+    },
+    {
+      "name": "clipped unibody remains watertight",
+      "ok": true,
+      "nonmanifold_edges": 0
+    }
+  ],
+  "caps": [
+    {
+      "key": "Esc",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "1!",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "2@",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "3#",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "4$",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "5%",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "6^",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "7&",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "8*",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "9(",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "0)",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "-_",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "=+",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Backspace",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Delete",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Tab",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Q",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "W",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "E",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "R",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "T",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Y",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "U",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "I",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "O",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "P",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "[{",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "]}",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "\\|",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Ins",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "CapsLock",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "A",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "S",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "D",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "F",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "G",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "H",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "J",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "K",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "L",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": ";:",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "'\"",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Enter",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "PageUp",
+      "surface_error_mm": 3.8146972691777137e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Left-Shift",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Z",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "X",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "C",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "V",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "B",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "N",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "M",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": ",<",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": ".>",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "/?",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Right-Shift",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "↑",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "PageDown",
+      "surface_error_mm": 4.7207664088944057e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Left-Ctrl",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Left-Win",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Left-Alt",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Space",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Right-Alt",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "Fn",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "←",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "↓",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    },
+    {
+      "key": "→",
+      "surface_error_mm": 4.6990323099294073e-07,
+      "center_offset_mm": 0,
+      "nonmanifold_edges": 0
+    }
+  ],
+  "maximum_surface_error_mm": 4.7207664088944057e-07,
+  "passed": true
+}

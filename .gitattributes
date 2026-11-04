@@ -9,4 +9,7 @@
 *.webp binary
 *.ttf binary
 *.ico binary
+*.glb binary
+*.blend binary
+*.hdr binary
 licenses/*.txt -whitespace

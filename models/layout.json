@@ -1,0 +1,540 @@
+[
+  {
+    "name": "Esc",
+    "left": "4",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 29"
+  },
+  {
+    "name": "1!",
+    "left": "60",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 1E"
+  },
+  {
+    "name": "2@",
+    "left": "116",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 1F"
+  },
+  {
+    "name": "3#",
+    "left": "172",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 20"
+  },
+  {
+    "name": "4$",
+    "left": "228",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 21"
+  },
+  {
+    "name": "5%",
+    "left": "284",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 22"
+  },
+  {
+    "name": "6^",
+    "left": "340",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 23"
+  },
+  {
+    "name": "7&",
+    "left": "396",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 24"
+  },
+  {
+    "name": "8*",
+    "left": "452",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 25"
+  },
+  {
+    "name": "9(",
+    "left": "508",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 26"
+  },
+  {
+    "name": "0)",
+    "left": "564",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 27"
+  },
+  {
+    "name": "-_",
+    "left": "620",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 2D"
+  },
+  {
+    "name": "=+",
+    "left": "676",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 2E"
+  },
+  {
+    "name": "Backspace",
+    "left": "732",
+    "top": "29",
+    "width": "92",
+    "height": "52",
+    "keyCode": "20 00 2A"
+  },
+  {
+    "name": "Delete",
+    "left": "828",
+    "top": "29",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 4C"
+  },
+  {
+    "name": "Tab",
+    "left": "4",
+    "top": "85",
+    "width": "80",
+    "height": "52",
+    "keyCode": "20 00 2B"
+  },
+  {
+    "name": "Q",
+    "left": "88",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 14"
+  },
+  {
+    "name": "W",
+    "left": "144",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 1A"
+  },
+  {
+    "name": "E",
+    "left": "200",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 08"
+  },
+  {
+    "name": "R",
+    "left": "256",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 15"
+  },
+  {
+    "name": "T",
+    "left": "312",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 17"
+  },
+  {
+    "name": "Y",
+    "left": "368",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 1C"
+  },
+  {
+    "name": "U",
+    "left": "424",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 18"
+  },
+  {
+    "name": "I",
+    "left": "480",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 0C"
+  },
+  {
+    "name": "O",
+    "left": "536",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 12"
+  },
+  {
+    "name": "P",
+    "left": "592",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 13"
+  },
+  {
+    "name": "[{",
+    "left": "648",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 2F"
+  },
+  {
+    "name": "]}",
+    "left": "704",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 30"
+  },
+  {
+    "name": "\\|",
+    "left": "760",
+    "top": "85",
+    "width": "64",
+    "height": "52",
+    "keyCode": "20 00 31"
+  },
+  {
+    "name": "Ins",
+    "left": "828",
+    "top": "85",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 49"
+  },
+  {
+    "name": "CapsLock",
+    "left": "4",
+    "top": "141",
+    "width": "92",
+    "height": "52",
+    "keyCode": "20 00 39"
+  },
+  {
+    "name": "A",
+    "left": "100",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 04"
+  },
+  {
+    "name": "S",
+    "left": "156",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 16"
+  },
+  {
+    "name": "D",
+    "left": "212",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 07"
+  },
+  {
+    "name": "F",
+    "left": "268",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 09"
+  },
+  {
+    "name": "G",
+    "left": "324",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 0A"
+  },
+  {
+    "name": "H",
+    "left": "380",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 0B"
+  },
+  {
+    "name": "J",
+    "left": "436",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 0D"
+  },
+  {
+    "name": "K",
+    "left": "492",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 0E"
+  },
+  {
+    "name": "L",
+    "left": "548",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 0F"
+  },
+  {
+    "name": ";:",
+    "left": "604",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 33"
+  },
+  {
+    "name": "'\"",
+    "left": "660",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 34"
+  },
+  {
+    "name": "Enter",
+    "left": "716",
+    "top": "141",
+    "width": "108",
+    "height": "52",
+    "keyCode": "20 00 28"
+  },
+  {
+    "name": "PageUp",
+    "left": "828",
+    "top": "141",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 4B"
+  },
+  {
+    "name": "Left-Shift",
+    "left": "4",
+    "top": "197",
+    "width": "114",
+    "height": "52",
+    "keyCode": "20 02 00"
+  },
+  {
+    "name": "Z",
+    "left": "122",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 1D"
+  },
+  {
+    "name": "X",
+    "left": "178",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 1B"
+  },
+  {
+    "name": "C",
+    "left": "234",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 06"
+  },
+  {
+    "name": "V",
+    "left": "290",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 19"
+  },
+  {
+    "name": "B",
+    "left": "346",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 05"
+  },
+  {
+    "name": "N",
+    "left": "402",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 11"
+  },
+  {
+    "name": "M",
+    "left": "458",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 10"
+  },
+  {
+    "name": ",<",
+    "left": "514",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 36"
+  },
+  {
+    "name": ".>",
+    "left": "570",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 37"
+  },
+  {
+    "name": "/?",
+    "left": "626",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 38"
+  },
+  {
+    "name": "Right-Shift",
+    "left": "682",
+    "top": "197",
+    "width": "86",
+    "height": "52",
+    "keyCode": "20 20 00",
+    "forbidEdit": true
+  },
+  {
+    "name": "↑",
+    "left": "772",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 52"
+  },
+  {
+    "name": "PageDown",
+    "left": "828",
+    "top": "197",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 4E"
+  },
+  {
+    "name": "Left-Ctrl",
+    "left": "4",
+    "top": "253",
+    "width": "60",
+    "height": "52",
+    "keyCode": "20 01 00"
+  },
+  {
+    "name": "Left-Win",
+    "left": "68",
+    "top": "253",
+    "width": "60",
+    "height": "52",
+    "keyCode": "20 08 00"
+  },
+  {
+    "name": "Left-Alt",
+    "left": "132",
+    "top": "253",
+    "width": "60",
+    "height": "52",
+    "keyCode": "20 04 00"
+  },
+  {
+    "name": "Space",
+    "left": "196",
+    "top": "253",
+    "width": "364",
+    "height": "52",
+    "keyCode": "20 00 2C"
+  },
+  {
+    "name": "Right-Alt",
+    "left": "564",
+    "top": "253",
+    "width": "60",
+    "height": "52",
+    "keyCode": "20 40 00"
+  },
+  {
+    "name": "Fn",
+    "left": "628",
+    "top": "253",
+    "width": "60",
+    "height": "52",
+    "keyCode": "A0 01 00",
+    "forbidEdit": true
+  },
+  {
+    "name": "←",
+    "left": "719",
+    "top": "253",
+    "width": "49",
+    "height": "52",
+    "keyCode": "20 00 50"
+  },
+  {
+    "name": "↓",
+    "left": "772",
+    "top": "253",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 51"
+  },
+  {
+    "name": "→",
+    "left": "828",
+    "top": "253",
+    "width": "52",
+    "height": "52",
+    "keyCode": "20 00 4F"
+  }
+]

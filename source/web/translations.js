@@ -1,6 +1,7 @@
 (function(root){
 'use strict';
 const messages={
+ '3D 보기 초기화':'Reset 3D view','드래그하여 회전 · 두 번 클릭하여 초기화':'Drag to rotate · Double-click to reset',
  '키보드':'Keyboard','키 매핑':'Key Mapping','입력 깊이':'Actuation','고급 키':'Advanced','조명':'Lighting','매크로':'Macros','키 테스트':'Key Test','보정':'Calibration','일반':'General','도움말':'Help',
  '언어':'Language','메뉴':'Menu','최소화':'Minimize','최대화':'Maximize','닫기':'Close','취소':'Cancel','계속':'Continue',
  '연결':'Connect','연결 중':'Connecting','연결됨':'Connected','연결 대기':'Not connected','연결 해제':'Disconnect','다시 연결':'Reconnect','다시 시도':'Try again','다시 적용':'Retry',

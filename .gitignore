@@ -14,3 +14,9 @@ __pycache__/
 /LofreeHUB-*.zip
 installation-result.json
 branding-verification.json
+/models/references/*
+!/models/references/sources.json
+/models/review/*
+!/models/review/Hyzen67.blend
+!/models/review/geometry-validation.json
+!/models/review/model-info.json

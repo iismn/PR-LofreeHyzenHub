@@ -18,8 +18,8 @@ using Microsoft.Web.WebView2.Wpf;
 [assembly:AssemblyTitle("Lofree HUB")]
 [assembly:AssemblyProduct("Lofree HUB")]
 [assembly:AssemblyDescription("Lofree HYZEN 67 keyboard settings")]
-[assembly:AssemblyVersion("1.2.0.0")]
-[assembly:AssemblyFileVersion("1.2.0.0")]
+[assembly:AssemblyVersion("1.3.0.0")]
+[assembly:AssemblyFileVersion("1.3.0.0")]
 namespace HyzenControl {
  static class Program {
   internal const string AppUserModelId="Lofree.HUB";
@@ -83,7 +83,7 @@ namespace HyzenControl {
   async Task Start() {
    try {
     Program.Extract("WebView2Loader.dll");CoreWebView2Environment.SetLoaderDllFolderPath(Path.Combine(Program.DataPath,"Runtime"));
-    var env=await CoreWebView2Environment.CreateAsync(null,Path.Combine(Program.DataPath,"WebView2"));await web.EnsureCoreWebView2Async(env);
+    var env=await CoreWebView2Environment.CreateAsync(null,Path.Combine(Program.VerifyDirectory??Program.DataPath,"WebView2"));await web.EnsureCoreWebView2Async(env);
     var core=web.CoreWebView2;
     core.Settings.IsStatusBarEnabled=false;core.Settings.AreDefaultContextMenusEnabled=false;core.Settings.AreDevToolsEnabled=false;core.Settings.IsZoomControlEnabled=false;
     core.Settings.IsGeneralAutofillEnabled=false;core.Settings.IsPasswordAutosaveEnabled=false;core.Settings.AreHostObjectsAllowed=false;core.Settings.IsNonClientRegionSupportEnabled=true;
@@ -91,8 +91,8 @@ namespace HyzenControl {
     core.WebResourceRequested+=delegate(object sender,CoreWebView2WebResourceRequestedEventArgs e) {
      string name=e.Request.Uri.StartsWith(Origin+"/")?e.Request.Uri.Substring(Origin.Length+1).Split('?')[0]:"";
      var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("Hyzen.Web."+name);
-     string type=name.EndsWith(".html")?"text/html; charset=utf-8":name.EndsWith(".js")?"text/javascript; charset=utf-8":name.EndsWith(".css")?"text/css; charset=utf-8":name.EndsWith(".ttf")?"font/ttf":name.EndsWith(".webp")?"image/webp":name.EndsWith(".png")?"image/png":"application/octet-stream";
-     string headers="Content-Type: "+type+"\r\nX-Content-Type-Options: nosniff\r\nContent-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'\r\n";
+     string type=name.EndsWith(".html")?"text/html; charset=utf-8":name.EndsWith(".js")?"text/javascript; charset=utf-8":name.EndsWith(".css")?"text/css; charset=utf-8":name.EndsWith(".ttf")?"font/ttf":name.EndsWith(".webp")?"image/webp":name.EndsWith(".png")?"image/png":name.EndsWith(".glb")?"model/gltf-binary":"application/octet-stream";
+     string headers="Content-Type: "+type+"\r\nX-Content-Type-Options: nosniff\r\nContent-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'\r\n";
      e.Response=env.CreateWebResourceResponse(stream??new MemoryStream(),stream==null?404:200,stream==null?"Not Found":"OK",headers);
     };
     core.NavigationStarting+=delegate(object sender,CoreWebView2NavigationStartingEventArgs e){e.Cancel=e.Uri!=Origin+"/index.html";};

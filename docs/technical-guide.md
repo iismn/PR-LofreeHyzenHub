@@ -31,6 +31,10 @@ node --test .\tests\*.test.cjs
 | `source/web/instrument-motion.js` | 눈금 이동과 틱 안착 |
 | `source/web/block-glow.js` | 블록별 도트·눈금 발광 |
 | `source/web/page-motion.js` | 메뉴 표시와 페이지 전환 |
+| `source/web/keyboard3d.js` | 로컬 GLB, 키 선택, 회전·눌림, 필요할 때만 렌더링 |
+| `source/web/keyboard-lighting.js` | 키·LED 바의 색·밝기·효과 샘플링 |
+| `source/web/hyzen-67.glb` | 승인된 Blender 모델의 앱용 내보내기 |
+| `models/` | Blender 원본, 생성·형상 검증 스크립트와 출처 |
 | `source/assets/` | 벡터 아이콘과 ICO·PNG |
 | `installer/Install.ps1` | 사용자 폴더 설치와 시작 메뉴 바로가기 |
 | `tests/` | 하드웨어 없이 실행하는 테스트 |
