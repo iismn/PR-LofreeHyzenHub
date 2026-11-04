@@ -1,6 +1,7 @@
 import * as THREE from './three.module.js';
 import { GLTFLoader } from './three-gltf.js';
 import { HDRLoader } from './three-hdr.js';
+import { KeyboardBloom } from './keyboard-post.js';
 import './keyboard-lighting.js';
 
 // One renderer and one cached Blender asset are reused across every page.
@@ -9,8 +10,6 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const canvas = document.createElement('canvas');
 canvas.className = 'keyboard-canvas';
 canvas.setAttribute('aria-hidden', 'true');
-const glowCanvas=document.createElement('canvas');glowCanvas.className='keyboard-light-bloom';glowCanvas.setAttribute('aria-hidden','true');
-const glowContext=glowCanvas.getContext('2d');
 const scene = new THREE.Scene();
 const pivot = new THREE.Group();
 scene.add(pivot);
@@ -22,10 +21,12 @@ const target = new THREE.Vector3(0,.3,0);
 let modelBounds,buttons=new Map();
 const fallbackPositions=new WeakMap();
 const pose = {yaw: -.22, elevation: .95};
-let goal = {...pose}, renderer, environment, studio, capPhoto, modelPromise, model, host,frontStrip,ground,stripTexture;
+let goal = {...pose}, renderer, bloom, environment, studio, capPhoto, modelPromise, model, host,frontStrip,ground,stripTexture;
 let frame=0, lastTime=0, activePointer, hovering, error, visible=true, measured={width:0,height:0};
 let pendingFrames=0, rendered=0, loads=0, contextLost=false;
 let lightTimer=0,lastHit=null,lastLighting;
+let graphicScale=window.HUB_PREFERENCES?.keyboardScale||120;
+document.documentElement.style.setProperty('--keyboard-graphic-scale',graphicScale/100);
 const ledColor=new THREE.Color(),highlightColor=new THREE.Color(0x9aaeff);
 const Lighting=window.HyzenLighting;
 const translate = value => window.HyzenLocale?.text(value) || value;
@@ -38,15 +39,16 @@ function initialize(){
  renderer.setClearColor(0,0);
  renderer.outputColorSpace=THREE.SRGBColorSpace;
  renderer.toneMapping=THREE.ACESFilmicToneMapping;
- renderer.toneMappingExposure=1.05;
+ renderer.toneMappingExposure=.86;
+ bloom=new KeyboardBloom(renderer);
  renderer.transmissionResolutionScale=.45;
  renderer.shadowMap.enabled=true;
  renderer.shadowMap.type=THREE.VSMShadowMap;
  renderer.shadowMap.autoUpdate=false;
  renderer.shadowMap.needsUpdate=true;
- scene.environmentIntensity=.85;scene.environmentRotation.y=.8;
- scene.add(new THREE.HemisphereLight(0xdce6f0,0x101522,.3));
- const key=new THREE.DirectionalLight(0xfff6ea,2.5);
+ scene.environmentIntensity=.44;scene.environmentRotation.y=.8;
+ scene.add(new THREE.HemisphereLight(0xdce6f0,0x101522,.14));
+ const key=new THREE.DirectionalLight(0xfff6ea,1.4);
  key.position.set(-10,25,16);key.castShadow=true;
  key.shadow.mapSize.set(2048,2048);key.shadow.radius=12;key.shadow.blurSamples=12;
  Object.assign(key.shadow.camera,{left:-22,right:22,top:15,bottom:-15,near:1,far:70});
@@ -140,8 +142,11 @@ function load(){
       internal.push(child);
      }
     });
-    keys.set(node.userData.hyzenKeyCode,{node,caps,internal,corners,center,y:node.position.y,pressed:0,light:0,led:null,
-     coordinate:{x:(node.position.x+165.45)/330.9,y:((node.userData.row_profile||1)-1)/4,index:node.userData.hyzenOrdinal||0}});
+    const key={node,caps,internal,corners,center,y:node.position.y,pressed:0,light:0,led:null,
+     coordinate:{x:(node.position.x+165.45)/330.9,y:((node.userData.row_profile||1)-1)/4,index:node.userData.hyzenOrdinal||0},glow:{inverse:{value:new THREE.Matrix4()},color:{value:new THREE.Color()},power:{value:0}}};
+    for(const cap of caps)for(const material of Array.isArray(cap.material)?cap.material:[cap.material])diffusedLight(material,key,material.name.includes('planar')?.2:1.05);
+    for(const part of internal)for(const material of Array.isArray(part.material)?part.material:[part.material])diffusedLight(material,key,.7);
+    keys.set(node.userData.hyzenKeyCode,key);
    }
   });
   model.traverse(node=>{if(node.isMesh&&node.name.startsWith('Recessed_front_diffuser'))frontStrip=node;});
@@ -183,7 +188,7 @@ function refresh(){
   buttons=new Map([...(host?.querySelectorAll('[data-model-key]')||[])].map(button=>[button.dataset.modelKey,button]));
   for(const button of buttons.values())fallbackPositions.set(button,button.style.cssText);
   if(host){
-   host.dataset.modelState=error?'fallback':'loading';host.prepend(glowCanvas);host.prepend(canvas);
+   host.dataset.modelState=error?'fallback':'loading';host.prepend(canvas);
    resizeObserver.observe(host);
    if(viewChanged)goal=host.dataset.modelView==='landing'?{yaw:-.22,elevation:.95}:{yaw:0,elevation:1.05};
    // During page changes keep an established pose; animate connection into view.
@@ -191,6 +196,7 @@ function refresh(){
    for(const b of host.querySelectorAll('[data-model-reset]')){
     b.ariaLabel=translate('3D 보기 초기화');b.title=translate('드래그하여 회전 · 두 번 클릭하여 초기화');
    }
+   for(const input of host.querySelectorAll('[data-model-scale]'))input.value=String(graphicScale);
   }
  }
  if(!host){cancelAnimationFrame(frame);clearTimeout(lightTimer);frame=0;lightTimer=0;return;}
@@ -201,7 +207,7 @@ function refresh(){
 function resize(){
  if(!host||!renderer||!host.clientWidth||!host.clientHeight)return;
  const width=host.clientWidth,height=host.clientHeight;
- if(width!==measured.width||height!==measured.height){renderer.setSize(width,height,false);const dpr=renderer.getPixelRatio();glowCanvas.width=Math.round(width*dpr);glowCanvas.height=Math.round(height*dpr);measured={width,height};}
+ if(width!==measured.width||height!==measured.height){renderer.setSize(width,height,false);const dpr=renderer.getPixelRatio();bloom.setSize(width*dpr,height*dpr);measured={width,height};}
  invalidate(2);
 }
 const resizeObserver=new ResizeObserver(resize);
@@ -263,19 +269,23 @@ function tick(now){
   if(Math.abs(key.light-light)>.001||Math.abs(key.pressed-(down?1:0))>.001)moving=true;
   key.node.position.y=key.y-key.pressed*1.2;
   for(const cap of key.caps)for(const material of Array.isArray(cap.material)?cap.material:[cap.material]){
-   if(material.emissive){material.emissive.copy(highlightColor).multiplyScalar(key.light).add(ledColor.setRGB(...led.color,THREE.SRGBColorSpace).multiplyScalar(led.intensity*.35));material.emissiveIntensity=1;}
+   if(material.emissive){material.emissive.copy(highlightColor).multiplyScalar(key.light);material.emissiveIntensity=1;}
   }
-  for(const part of key.internal)for(const material of Array.isArray(part.material)?part.material:[part.material])if(material.emissive){material.emissive.setRGB(...led.color,THREE.SRGBColorSpace);material.emissiveIntensity=led.intensity*2.8;}
+  for(const part of key.internal)for(const material of Array.isArray(part.material)?part.material:[part.material])if(material.emissive)material.emissiveIntensity=0;
+  key.glow.color.value.setRGB(...led.color,THREE.SRGBColorSpace);key.glow.power.value=led.intensity*2.7;
  }
  pivot.updateMatrixWorld(true);fitCamera();projectButtons();
+ for(const key of keys.values())key.glow.inverse.value.copy(key.node.matrixWorld).invert();
  const front=Lighting.sample('front',lighting.front,{x:.5},seconds,lastHit);
  if(stripTexture){
   const pixels=stripTexture.image.data;
   for(let i=0;i<64;i++){const output=Lighting.sample('front',lighting.front,{x:(i+.5)/64},seconds,lastHit);ledColor.setRGB(...output.color,THREE.SRGBColorSpace).multiplyScalar(output.intensity);pixels[i*4]=Math.round(ledColor.r*255);pixels[i*4+1]=Math.round(ledColor.g*255);pixels[i*4+2]=Math.round(ledColor.b*255);pixels[i*4+3]=255;}
   stripTexture.needsUpdate=true;
  }
- renderer.render(scene,camera);rendered++;
- paintBloom(lighting,seconds);lastLighting={...lighting,frontOutput:front};
+ bloom.render(scene,camera);
+ if(renderer.info.programs.some(program=>program.diagnostics?.runnable===false)){fail('3D lighting is unavailable');return;}
+ rendered++;
+ lastLighting={...lighting,frontOutput:front};
  host.dataset.modelState='ready';
  if(--pendingFrames>0||moving)invalidate();
  else if(!reduced.matches&&!window.hyzenApp?.state.verifying&&(Lighting.animated('back',lighting.back)||Lighting.animated('front',lighting.front)||lastHit&&lighting.back.brightness>0&&[2,3,5,9].includes(lighting.back.mode)&&now/1000-lastHit.time<3))lightTimer=setTimeout(()=>{lightTimer=0;invalidate();},33);
@@ -293,21 +303,20 @@ function readLighting(){
  }
  return result;
 }
-function screenPoint(point){const p=point.project(camera);return{x:(p.x+1)/2*glowCanvas.width,y:(1-p.y)/2*glowCanvas.height};}
-function paintBloom(lighting,seconds){
- const ctx=glowContext,dpr=renderer.getPixelRatio();ctx.clearRect(0,0,glowCanvas.width,glowCanvas.height);
- ctx.globalCompositeOperation='lighter';
- if(frontStrip){
-  const box=new THREE.Box3().setFromObject(frontStrip),segments=32,y=(box.min.y+box.max.y)/2,z=box.max.z+.001;
-  for(let i=0;i<segments;i++){
-   const output=Lighting.sample('front',lighting.front,{x:(i+.5)/segments},seconds,lastHit);if(output.intensity<.005)continue;
-   const a=screenPoint(new THREE.Vector3(THREE.MathUtils.lerp(box.min.x,box.max.x,i/segments),y,z)),b=screenPoint(new THREE.Vector3(THREE.MathUtils.lerp(box.min.x,box.max.x,(i+1)/segments),y,z));
-   const color=output.color.map(c=>Math.round(c*255));ctx.lineCap='round';
-   ctx.strokeStyle=`rgba(${color},${output.intensity*.32})`;ctx.filter=`blur(${4*dpr}px)`;ctx.lineWidth=3*dpr;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-   ctx.strokeStyle=`rgba(${color},${output.intensity*.16})`;ctx.filter=`blur(${9*dpr}px)`;ctx.lineWidth=3*dpr;ctx.stroke();
-  }
- }
- ctx.filter='none';
+function diffusedLight(material,key,gain){
+ material.onBeforeCompile=shader=>{
+  Object.assign(shader.uniforms,{hubKeyInverse:key.glow.inverse,hubLightColor:key.glow.color,hubLightPower:key.glow.power,hubLightGain:{value:gain},hubLightWidth:{value:Math.min(10,Math.max(5.8,(key.node.userData.key_width_mm||18)*.27))}});
+  shader.vertexShader='uniform mat4 hubKeyInverse;varying vec3 hubKeyPosition;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','hubKeyPosition=(hubKeyInverse*modelMatrix*vec4(transformed,1.)).xyz;\n#include <project_vertex>');
+  shader.fragmentShader='uniform vec3 hubLightColor;uniform float hubLightPower;uniform float hubLightGain;uniform float hubLightWidth;varying vec3 hubKeyPosition;\n'+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+   vec3 delta=hubKeyPosition-vec3(0.,1.5,3.4);
+   float spot=exp(-1.4*(delta.x*delta.x/(hubLightWidth*hubLightWidth)+delta.z*delta.z/45.));
+   float depthFade=exp(-max(delta.y,0.)*.16);
+   vec3 lightColor=mix(hubLightColor,vec3(max(max(hubLightColor.r,hubLightColor.g),hubLightColor.b)),spot*.16);
+   totalEmissiveRadiance+=lightColor*(hubLightPower*hubLightGain*spot*depthFade);`);
+ };
+ material.customProgramCacheKey=()=> 'hyzen-diffused-led-1';
 }
 
 function pick(clientX,clientY){
@@ -385,15 +394,16 @@ function refreshView(){const previous=host;originalRefresh();if(previous!==host)
 
 // Read-only diagnostics are used by the native visual checks; no hardware calls.
 async function ready(){await load();refreshView();for(let i=0;i<100&&host&&host.dataset.modelState!=='ready'&&!error;i++)await new Promise(resolve=>setTimeout(resolve,30));return inspect();}
-function inspect(){return{keys:keys.size,loads,rendered,error:error||null,state:host?.dataset.modelState||'detached',view:host?.dataset.modelView||null,pose:{...pose},goal:{...goal},canvasCount:document.querySelectorAll('.keyboard-canvas').length,drawCalls:renderer?.info.render.calls,triangles:renderer?.info.render.triangles,dimensions:{...measured},scheduled:!!frame||!!lightTimer,lighting:lastLighting,studio:!!studio,frontStrip:!!frontStrip};}
+function inspect(){return{keys:keys.size,loads,rendered,error:error||null,state:host?.dataset.modelState||'detached',view:host?.dataset.modelView||null,pose:{...pose},goal:{...goal},canvasCount:document.querySelectorAll('.keyboard-canvas').length,drawCalls:bloom?.info.calls,triangles:bloom?.info.triangles,dimensions:{...measured},scheduled:!!frame||!!lightTimer,lighting:lastLighting,studio:!!studio,frontStrip:!!frontStrip,bloom:!!bloom,scale:graphicScale};}
 function keyCenter(code){const key=keys.get(code);if(!key||!host)return null;const point=key.center.clone().applyMatrix4(key.node.matrixWorld).project(camera),rect=canvas.getBoundingClientRect();return{x:rect.left+(point.x+1)/2*rect.width,y:rect.top+(1-point.y)/2*rect.height};}
 function keyState(code){const key=keys.get(code);return key?{pressed:key.pressed,light:key.light,offset:key.y-key.node.position.y,led:key.led}:null;}
-window.Hyzen3D={refresh:refreshView,sync:()=>invalidate(2),ready,inspect,pick,keyCenter,keyState,reset};
+function setScale(value){if(!Number.isInteger(value)||value<80||value>160||value%10)return;graphicScale=value;document.documentElement.style.setProperty('--keyboard-graphic-scale',value/100);resize();}
+window.Hyzen3D={refresh:refreshView,sync:()=>invalidate(2),ready,inspect,pick,keyCenter,keyState,reset,setScale,get scale(){return graphicScale;}};
 refreshView();
 window.addEventListener('beforeunload',()=>{
  cancelAnimationFrame(frame);resizeObserver.disconnect();visibilityObserver.disconnect();
  const geometries=new Set(),materials=new Set();
  scene.traverse(node=>{if(node.geometry)geometries.add(node.geometry);for(const material of Array.isArray(node.material)?node.material:[node.material])if(material)materials.add(material);});
  for(const geometry of geometries)geometry.dispose();for(const material of materials)material.dispose();
- clearTimeout(lightTimer);stripTexture?.dispose();capPhoto?.dispose();studio?.dispose();environment?.dispose();renderer?.dispose();
+ clearTimeout(lightTimer);bloom?.dispose();stripTexture?.dispose();capPhoto?.dispose();studio?.dispose();environment?.dispose();renderer?.dispose();
 });

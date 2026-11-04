@@ -33,6 +33,7 @@ node --test .\tests\*.test.cjs
 | `source/web/page-motion.js` | 메뉴 표시와 페이지 전환 |
 | `source/web/keyboard3d.js` | 로컬 GLB, 키 선택, 회전·눌림, 필요할 때만 렌더링 |
 | `source/web/keyboard-lighting.js` | 키·LED 바의 색·밝기·효과 샘플링 |
+| `source/web/keyboard-post.js` | HDR 발광 추출·가우시안 블룸·투명 배경 합성 |
 | `source/web/hyzen-67.glb` | 승인된 Blender 모델의 앱용 내보내기 |
 | `models/` | Blender 원본, 생성·형상 검증 스크립트와 출처 |
 | `source/assets/` | 벡터 아이콘과 ICO·PNG |

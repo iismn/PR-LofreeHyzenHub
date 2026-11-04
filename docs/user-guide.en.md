@@ -12,6 +12,8 @@ Connect the keyboard by USB or its 2.4 GHz receiver, then click **Connect**. On 
 
 The connection screen and keyboard views show the bundled Blender model. Drag to rotate, then double-click or use the lower-right reset icon to restore the view. Click a cap to select its actual key. Key Test animates the pressed and released caps.
 
+The graphic starts at **120%**. Hover it and choose **80–160%** from the lower-right size menu, or use **General → Keyboard graphic size**. It fits the available window space and keeps your choice after restarting. This is a local viewing preference and does not change keyboard configuration.
+
 Static lighting renders only when needed. Animated lighting runs at up to 30 fps and pauses when hidden. If WebGL is unavailable, the app falls back to the official product photograph and preserves key selection. The model, renderer and studio lighting are bundled and do not require internet access.
 
 ## Choose a language
@@ -52,6 +54,8 @@ Choose the keyboard backlight, front light bar or receiver. Adjust effects, brig
 
 The 3D keyboard previews backlight and front-strip color, brightness and effects. Zero brightness turns that glow off. Animation phase is local to the preview; key-reactive effects use input delivered to this app. Receiver lighting is independent of the keyboard model.
 
+Darker studio lighting keeps the metal and smoked caps subdued. Light fades from a source inside each key, while HDR bloom diffuses from the visible keys and front strip.
+
 ![Lighting](images/lighting.png)
 
 ## Macros and key testing
@@ -82,6 +86,6 @@ The script does not register automatic startup. Close the app before replacing i
 
 ## Local data and scope
 
-The interface and device operations run locally. Key Test data stays in memory. WebView2 data remains in `%LOCALAPPDATA%\HyzenControl`; `preferences.json` stores the UI language. Apart from opening the official tool, running the app does not require internet access.
+The interface and device operations run locally. Key Test data stays in memory. WebView2 data remains in `%LOCALAPPDATA%\HyzenControl`; `preferences.json` stores the UI language and keyboard graphic size. Apart from opening the official tool, running the app does not require internet access.
 
 See [validation](validation.md) for the physical hardware scope, [build instructions](technical-guide.md) for source builds, and [REFERENCE.md](../REFERENCE.md) for asset sources.

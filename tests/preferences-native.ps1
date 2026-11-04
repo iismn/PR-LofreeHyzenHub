@@ -13,6 +13,7 @@ class Check {
  static void Main(string[] args){
   string path=Path.Combine(args[0],Guid.NewGuid().ToString("N")+".json");
   var prefs=new UserPreferences(path);Require(prefs.Language=="ko","Default language");
+  Require(prefs.KeyboardScale==120,"Default graphic size is 120 percent");
   prefs.SetLanguage("en");Require(new UserPreferences(path).Language=="en","English survives a new instance");
   prefs.SetLanguage("ko");Require(new UserPreferences(path).Language=="ko","Korean survives a new instance");
   string before=File.ReadAllText(path);bool rejected=false;
@@ -20,7 +21,13 @@ class Check {
   Require(rejected&&File.ReadAllText(path)==before&&prefs.Language=="ko","Invalid language leaves file and state unchanged");
   File.WriteAllText(path,"{broken");Require(new UserPreferences(path).Language=="ko","Corrupt preference fallback");
   File.WriteAllText(path,"{\"language\":\"fr\"}");Require(new UserPreferences(path).Language=="ko","Unknown preference fallback");
-  prefs.SetLanguage("en");Require(File.ReadAllText(path)=="{\"language\":\"en\"}","Only UI language is stored");
+  prefs.SetLanguage("en");Require(File.ReadAllText(path)=="{\"language\":\"en\",\"keyboardScale\":120}","Only local UI preferences are stored");
+  prefs.SetKeyboardScale(140);var restored=new UserPreferences(path);Require(restored.KeyboardScale==140&&restored.Language=="en","Size survives restart without changing language");
+  prefs.SetLanguage("ko");Require(new UserPreferences(path).KeyboardScale==140,"Language preserves graphic size");
+  before=File.ReadAllText(path);rejected=false;try{prefs.SetValues("en",135);}catch(ArgumentException){rejected=true;}
+  Require(rejected&&File.ReadAllText(path)==before&&prefs.Language=="ko"&&prefs.KeyboardScale==140,"Invalid size cannot partially save preferences");
+  File.WriteAllText(path,"{\"language\":\"en\"}");restored=new UserPreferences(path);Require(restored.Language=="en"&&restored.KeyboardScale==120,"Older language-only files migrate without rewriting");
+  File.WriteAllText(path,"{\"language\":\"en\",\"keyboardScale\":900}");restored=new UserPreferences(path);Require(restored.Language=="en"&&restored.KeyboardScale==120,"Invalid stored scale falls back independently");
   string blocked=Path.Combine(args[0],Guid.NewGuid().ToString("N"));Directory.CreateDirectory(blocked);var invalid=new UserPreferences(blocked);rejected=false;
   try{invalid.SetLanguage("en");}catch(IOException){rejected=true;}
   Require(rejected&&invalid.Language=="ko"&&!File.Exists(blocked+".tmp"),"Failed save keeps old state and removes temporary file");

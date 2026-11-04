@@ -19,6 +19,9 @@ window.runLocaleVerification=async({checks,screenshot,wait,settled})=>{
   $('[data-language=en]').click();await settled();
   checks.push({name:'general-en-switch-localizes-ui-without-hid-requests',ok:L.language==='en'&&document.documentElement.lang==='en'&&$('#pageContext').textContent==='General'&&$('#languageLabel').textContent==='Language'&&$('[data-language=en]').getAttribute('aria-pressed')==='true'&&$('[data-language=ko]').getAttribute('aria-pressed')==='false'&&hardware.length===0&&device.profile===originalProfile,hardwareRequests:hardware});
   checks.push({name:'language-switch-preserves-pending-edits-without-flushing-device-writes',ok:live.pending.has('sleep')&&$('#sleepFirst').value==='3'});
+  await setGraphicScale(140);
+  checks.push({name:'general-size-option-is-local-preserves-language-and-pending-edits',ok:$('#keyboardScale').value==='140'&&live.pending.has('sleep')&&$('#sleepFirst').value==='3'&&L.language==='en'&&hardware.length===0});
+  await setGraphicScale(120);
  }finally{device.rpc=originalRpc;await HyzenAutoApply.endProbe();live.delay=originalDelay;live.maxWait=originalWait;}
  const saved=await rpc('preferences');checks.push({name:'selected-language-is-saved-by-native-preferences',ok:saved.language==='en'});
  for(const [page]of nav.filter(([id])=>availablePage(id))){

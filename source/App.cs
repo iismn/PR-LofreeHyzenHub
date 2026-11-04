@@ -18,8 +18,8 @@ using Microsoft.Web.WebView2.Wpf;
 [assembly:AssemblyTitle("Lofree HUB")]
 [assembly:AssemblyProduct("Lofree HUB")]
 [assembly:AssemblyDescription("Lofree HYZEN 67 keyboard settings")]
-[assembly:AssemblyVersion("1.3.0.0")]
-[assembly:AssemblyFileVersion("1.3.0.0")]
+[assembly:AssemblyVersion("1.3.1.0")]
+[assembly:AssemblyFileVersion("1.3.1.0")]
 namespace HyzenControl {
  static class Program {
   internal const string AppUserModelId="Lofree.HUB";
@@ -107,7 +107,7 @@ namespace HyzenControl {
       await core.ExecuteScriptAsync("window.runVerification().then(result=>chrome.webview.postMessage({id:-1,action:'verification',result})).catch(error=>chrome.webview.postMessage({id:-1,action:'verification',result:{error:String(error)}}))");
      } catch(Exception e){File.WriteAllText(Path.Combine(Program.VerifyDirectory,"error.txt"),e.ToString());}
     };
-    await core.AddScriptToExecuteOnDocumentCreatedAsync("window.HUB_PREFERENCES="+json.Serialize(new{language=Program.Preferences.Language})+";");
+    await core.AddScriptToExecuteOnDocumentCreatedAsync("window.HUB_PREFERENCES="+json.Serialize(new{language=Program.Preferences.Language,keyboardScale=Program.Preferences.KeyboardScale})+";");
     core.Navigate(Origin+"/index.html");
    }catch(Exception e){MessageBox.Show(this,Program.Text("화면을 열지 못했습니다. Microsoft Edge WebView2 Runtime이 필요합니다.\n","Could not open the interface. Microsoft Edge WebView2 Runtime is required.\n")+e.Message,"Lofree HUB");Close();}
   }
@@ -117,8 +117,12 @@ namespace HyzenControl {
    try {
     var m=json.Deserialize<Dictionary<string,object>>(e.WebMessageAsJson);id=Convert.ToInt32(m["id"]);string action=Convert.ToString(m["action"]);
     if(action=="preferences"){
-     if(m.ContainsKey("language"))Program.Preferences.SetLanguage(Convert.ToString(m["language"]));
-     web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{language=Program.Preferences.Language}}));return;
+     if(m.ContainsKey("language")||m.ContainsKey("keyboardScale")){
+      double scale=m.ContainsKey("keyboardScale")?Convert.ToDouble(m["keyboardScale"]):Program.Preferences.KeyboardScale;
+      if(double.IsNaN(scale)||double.IsInfinity(scale)||scale!=Math.Truncate(scale)||scale<80||scale>160)throw new ArgumentException("보기 크기가 올바르지 않습니다.");
+      Program.Preferences.SetValues(m.ContainsKey("language")?Convert.ToString(m["language"]):Program.Preferences.Language,(int)scale);
+     }
+     web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{language=Program.Preferences.Language,keyboardScale=Program.Preferences.KeyboardScale}}));return;
     }
     if(action=="closeReady"){closePending=false;if(Convert.ToBoolean(m["ready"])){closeReady=true;Close();}return;}
     if(action=="verification"&&Program.VerifyDirectory!=null) {

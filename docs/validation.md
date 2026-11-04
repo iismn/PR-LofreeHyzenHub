@@ -1,5 +1,13 @@
 # Validation
 
+## 1.3.1 lighting and graphic size
+
+- **47 Node tests**, **14 native preference checks**, and **91/91 native UI checks** at both default and minimum sizes passed. Reports: [default](validation/v1.3.1-windows.json) / [minimum](validation/v1.3.1-windows-min.json).
+- The visible model uses the HDR bloom pipeline, and shader compilation failures return to the photograph fallback. The rendered lighting was visually reviewed in native WebView2, including a low-brightness cyan fixture and the front-strip halo.
+- The size toolbar changed the Lighting view's maximum width from 720 px at 100% to 864 px at 120%. All 67 projected key hit targets remained correct. Smaller windows fit the available width.
+- Size persistence, old language-only preference files, invalid values, atomic updates and write failures were checked. Changing size preserved language and pending device edits and caused no HID requests.
+- Native captures recorded zero physical setting writes. Lighting fixtures remain local to verification. The Blender model and the physical validation scope below are unchanged.
+
 ## 1.3.0 3D keyboard and lighting preview
 
 - **47 Node.js tests** passed, including the 67-key GLB/device-code match, photo regions, Backspace/Enter proportions, bundled dependencies, color/brightness limits, direction and reactive-effect decay.

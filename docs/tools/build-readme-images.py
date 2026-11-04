@@ -16,6 +16,8 @@ output.mkdir(parents=True, exist_ok=True)
 fonts = root / "source/web"
 font = lambda size: ImageFont.truetype(str(fonts / "Manrope-Regular.ttf"), size)
 def source_path(name):
+    if name == "lighting-preview.png" and (args.capture / "lighting-reference.png").exists():
+        return args.capture / "lighting-reference.png"
     if args.language == "en":
         name = {"landing.png": "en-connection.png", "keyboard.png": "en-keyboard.png", "depth-controls.png": "en-actuation.png", "light.png": "en-light.png", "home.png": "en-home.png"}.get(name, name)
     return args.capture / name
@@ -78,7 +80,7 @@ with Image.open(output / "hero.gif") as gif:
         gif.load()
         total += gif.info["duration"]
     report = {"frames": gif.n_frames, "durationMs": total, "size": gif.size, "bytes": (output / "hero.gif").stat().st_size,
-              "source": "Lofree HUB 1.3.0 read-only native app captures", "method": "Position animation of unchanged real screenshots"}
+              "source": "Lofree HUB 1.3.1 read-only native app captures", "method": "Position animation of unchanged real screenshots"}
 print(json.dumps(report))
 for language in ["ko", "en"]:
     with Image.open(args.capture / f"{language}-general.png") as image:

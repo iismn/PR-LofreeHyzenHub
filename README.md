@@ -6,11 +6,11 @@
 
 <br><br>
 
-<a href="https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.3.0/LofreeHUB.exe"><img src="docs/images/download-windows.svg" alt="Download Lofree HUB 1.3.0 for Windows" width="260" height="56"></a>
+<a href="https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.3.1/LofreeHUB.exe"><img src="docs/images/download-windows.svg" alt="Download Lofree HUB 1.3.1 for Windows" width="260" height="56"></a>
 
-**1.3.0 · Windows 10 / 11 · x64**
+**1.3.1 · Windows 10 / 11 · x64**
 
-[Release notes](https://github.com/iismn/PR-LofreeHyzenHub/releases/tag/v1.3.0) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Issues](https://github.com/iismn/PR-LofreeHyzenHub/issues)
+[Release notes](https://github.com/iismn/PR-LofreeHyzenHub/releases/tag/v1.3.1) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Issues](https://github.com/iismn/PR-LofreeHyzenHub/issues)
 
 [3D Keyboard](#3d-keyboard) · [Actuation](#actuation) · [Key Mapping](#key-mapping) · [Lighting](#lighting)
 
@@ -23,6 +23,8 @@
 The connection screen and keyboard views use the bundled Blender model. Drag to rotate; double-click or use the reset icon to restore the view. Click a cap to select its actual device key. Key Test animates each cap as it is pressed and released.
 
 Studio lighting and photograph-derived roof textures give the model its smoked finish. Backlight and front-strip color, brightness and effect previews follow the lighting controls; a soft glow stays around the front LED strip.
+
+The darker studio lighting keeps the metal and smoked caps subdued. Light diffuses from inside each cap, and HDR bloom follows the visible keys and front strip. The keyboard graphic starts at **120%**. Hover the graphic to choose **80–160%**, or use **General → Keyboard graphic size**; the choice is kept after restarting.
 
 ![3D key and front-strip lighting preview](docs/images/lighting-preview.png)
 
@@ -85,13 +87,13 @@ Choose **KO** or **EN** in **General → Language**. Menus, key lists, help, sta
 
 Windows 10 or Windows 11, x64, .NET Framework 4.8, and Microsoft Edge WebView2 Runtime.
 
-1. [Download LofreeHUB.exe](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.3.0/LofreeHUB.exe) to a writable folder and run it.
+1. [Download LofreeHUB.exe](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.3.1/LofreeHUB.exe) to a writable folder and run it.
 2. Connect the keyboard by USB or its 2.4 GHz receiver, then click **연결**.
 3. Select a key or setting. Changes apply automatically; a separate save button is not required.
 
 If the app reports that WebView2 is missing, [install the WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/).
 
-For a stable Start menu shortcut, download the [Windows ZIP](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.3.0/LofreeHUB-1.3.0-Windows-x64.zip), extract it, and run `Install.ps1` with PowerShell. It installs to `%LOCALAPPDATA%\Programs\LofreeHUB` and registers **Lofree HUB** in Start. Right-click the app in Start to pin it.
+For a stable Start menu shortcut, download the [Windows ZIP](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.3.1/LofreeHUB-1.3.1-Windows-x64.zip), extract it, and run `Install.ps1` with PowerShell. It installs to `%LOCALAPPDATA%\Programs\LofreeHUB` and registers **Lofree HUB** in Start. Right-click the app in Start to pin it.
 
 Settings change on the keyboard. WebView2 data and the local language preference stay in `%LOCALAPPDATA%\HyzenControl`, preserving the earlier app's local data. Close the app before replacing its EXE. The initial language is KO; select EN in **일반 → 언어** to use English.
 
@@ -115,6 +117,6 @@ Settings change on the keyboard. WebView2 data and the local language preference
 
 ---
 
-[Download 1.3.0](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.3.0/LofreeHUB.exe) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Build guide (Korean)](docs/technical-guide.md) · [Report an issue](https://github.com/iismn/PR-LofreeHyzenHub/issues)
+[Download 1.3.1](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.3.1/LofreeHUB.exe) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Build guide (Korean)](docs/technical-guide.md) · [Report an issue](https://github.com/iismn/PR-LofreeHyzenHub/issues)
 
 [Asset sources](REFERENCE.md) · [Third-party notices](licenses) · [3D model](models/README.md) · [Preview source](docs/tools/README.md)
