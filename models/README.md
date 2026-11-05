@@ -30,3 +30,5 @@ In 1.3.1, the viewer uses darker studio illumination and a local-space diffusion
 In 1.3.2, wheel input adjusts the orthographic camera zoom, and horizontal orbit follows the hand. Releasing a drag within 10° of the view's default yaw and elevation starts a damped spring return without changing zoom. Larger rotations stay in place. Reset restores angle and zoom while retaining the graphic-size preference. These controls do not modify the model or send device settings.
 
 In 1.3.3, the return threshold increases to 30° on each axis. The connection screen uses a fixed 160% graphic size within the available window space. The saved 80–160% preference applies to settings views only; wheel zoom and reset remain available on both screens.
+
+In 1.3.5, all settings views share the same viewport dimensions and retain camera rotation and zoom. The renderer and canvas survive control updates. Connection transitions interpolate the actual live canvas rectangle and camera rather than showing a View Transition snapshot. Only a rendering failure reveals the photograph fallback; page changes do not reset the model to a loading image.

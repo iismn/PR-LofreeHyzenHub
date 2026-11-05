@@ -30,6 +30,7 @@ let frame=0, lastTime=0, activePointer, hovering, error, visible=true, measured=
 let pendingFrames=0, rendered=0, loads=0, contextLost=false;
 let lightTimer=0,lastHit=null,lastLighting;
 let graphicScale=window.HUB_PREFERENCES?.keyboardScale||120;
+let boundView=null,travel=null,lastTravel=null;
 document.documentElement.style.setProperty('--keyboard-graphic-scale',graphicScale/100);
 const ledColor=new THREE.Color(),highlightColor=new THREE.Color(0x9aaeff);
 const Lighting=window.HyzenLighting;
@@ -176,6 +177,7 @@ function load(){
 
 function fail(reason){
  error=String(reason?.message||reason);if(host)host.dataset.modelState='fallback';
+ if(travel)finishTravel();
  restorePhotoPositions();
  cancelAnimationFrame(frame);clearTimeout(lightTimer);frame=0;lightTimer=0;
  return null;
@@ -186,16 +188,16 @@ function refresh(){
   ?document.querySelector('#connectVisual .model-host')
   :document.querySelector('#content .model-host');
  if(next!==host){
-  const viewChanged=host?.dataset.modelView!==next?.dataset.modelView;
   if(host)resizeObserver.unobserve(host);
   host=next;hovering=null;activePointer=null;canvas.title='';canvas.style.cursor='grab';
   buttons=new Map([...(host?.querySelectorAll('[data-model-key]')||[])].map(button=>[button.dataset.modelKey,button]));
   for(const button of buttons.values())fallbackPositions.set(button,button.style.cssText);
   if(host){
-   host.dataset.modelState=error?'fallback':'loading';host.prepend(canvas);
+   host.dataset.modelState=error||contextLost?'fallback':rendered?'ready':'loading';if(!travel)host.prepend(canvas);
    resizeObserver.observe(host);
-   if(viewChanged){goal=Motion.home(host.dataset.modelView);magnetic=false;velocity.yaw=velocity.elevation=0;}
-   // During page changes keep an established pose; animate connection into view.
+   visible=true;
+   // A tab change retains camera pose and zoom. Only crossing the connection screen resets the view.
+   if((boundView==='landing')!==(host.dataset.modelView==='landing')){goal=Motion.home(host.dataset.modelView);magnetic=false;velocity.yaw=velocity.elevation=0;}
    if(!rendered||reduced.matches)Object.assign(pose,goal);
    for(const b of host.querySelectorAll('[data-model-reset]')){
     b.ariaLabel=translate('3D 보기 초기화');b.title=translate('드래그하여 회전 · 휠로 확대/축소 · 두 번 클릭하여 초기화');
@@ -203,16 +205,47 @@ function refresh(){
    for(const input of host.querySelectorAll('[data-model-scale]'))input.value=String(graphicScale);
   }
  }
+ if(host){
+  boundView=host.dataset.modelView;
+  buttons=new Map([...host.querySelectorAll('[data-model-key]')].map(button=>[button.dataset.modelKey,button]));
+  for(const button of buttons.values())if(!fallbackPositions.has(button))fallbackPositions.set(button,button.style.cssText);
+ }
  if(!host){cancelAnimationFrame(frame);clearTimeout(lightTimer);frame=0;lightTimer=0;return;}
  if(error){restorePhotoPositions();return;}
  load().then(result=>{if(result&&host){resize();invalidate(3);}});
 }
 
 function resize(){
+ if(travel){invalidate();return;}
  if(!host||!renderer||!host.clientWidth||!host.clientHeight)return;
- const width=host.clientWidth,height=host.clientHeight;
+ setRenderSize(host.clientWidth,host.clientHeight);invalidate(2);
+}
+function setRenderSize(width,height){
  if(width!==measured.width||height!==measured.height){renderer.setSize(width,height,false);const dpr=renderer.getPixelRatio();bloom.setSize(width*dpr,height*dpr);measured={width,height};}
- invalidate(2);
+}
+
+function applyTravelRect(rect){for(const key of ['left','top','width','height'])canvas.style[key]=rect[key]+'px';setRenderSize(rect.width,rect.height);}
+function finishTravel(){
+ const finished=travel;if(!finished)return;
+ travel=null;canvas.classList.remove('model-traveling');canvas.style.cssText='';delete document.body.dataset.modelHandoff;
+ if(host){host.prepend(canvas);host.dataset.modelState=error||contextLost?'fallback':'ready';resize();}
+ lastTravel={frames:finished.frames,samples:finished.samples,from:finished.from,to:finished.to,completed:true};finished.resolve();
+}
+async function handoff(update){
+ await load();
+ if(!host||!rendered||error||contextLost||reduced.matches){await update();return;}
+ const from=canvas.getBoundingClientRect(),fromPose={...pose};
+ let resolve;const done=new Promise(value=>resolve=value);
+ travel={from:{left:from.left,top:from.top,width:from.width,height:from.height},to:null,fromPose,start:null,duration:720,frames:0,samples:[],resolve};
+ canvas.classList.add('model-traveling');document.body.dataset.modelHandoff='';document.body.append(canvas);applyTravelRect(travel.from);invalidate();
+ try{
+  await update();
+  if(!travel)return;
+  if(!host){finishTravel();return;}
+  const rect=host.getBoundingClientRect();travel.to={left:rect.left,top:rect.top,width:rect.width,height:rect.height};travel.start=performance.now();
+  goal=Motion.home(host.dataset.modelView);magnetic=false;velocity.yaw=velocity.elevation=0;
+  invalidate();await done;
+ }catch(reason){finishTravel();throw reason;}
 }
 const resizeObserver=new ResizeObserver(resize);
 
@@ -251,18 +284,25 @@ function restorePhotoPositions(){for(const button of buttons.values())button.sty
 function invalidate(count=1){
  clearTimeout(lightTimer);lightTimer=0;
  pendingFrames=Math.max(pendingFrames,count);
- if(!frame&&host&&visible&&!document.hidden&&!error&&!contextLost)frame=requestAnimationFrame(tick);
+ if(!frame&&host&&(visible||travel)&&!document.hidden&&!error&&!contextLost)frame=requestAnimationFrame(tick);
 }
 
 function tick(now){
  frame=0;
- if(!host||!model||!renderer||!visible||document.hidden||!measured.width||contextLost)return;
+ if(!host||!model||!renderer||!visible&&!travel||document.hidden||!measured.width||contextLost)return;
  const dt=Math.min(.05,(now-(lastTime||now-16))/1000);lastTime=now;
  const smoothing=reduced.matches?1:1-Math.exp(-dt*13);
- let moving=false;
+ let moving=false,travelDone=false;
+ if(travel){
+  const progress=travel.start===null?0:Math.min(1,(now-travel.start)/travel.duration),ease=progress*progress*(3-2*progress);
+  const rect=Motion.blendRect(travel.from,travel.to||travel.from,progress);applyTravelRect(rect);
+  for(const name of ['yaw','elevation','zoom'])pose[name]=travel.fromPose[name]+((travel.start===null?travel.fromPose:goal)[name]-travel.fromPose[name])*ease;
+  travel.frames++;if(travel.samples.length<64)travel.samples.push({progress,left:rect.left,top:rect.top,width:rect.width,height:rect.height,yaw:pose.yaw,elevation:pose.elevation,zoom:pose.zoom});
+  moving=true;travelDone=progress===1;
+ }
  const lighting=readLighting(),seconds=(reduced.matches||window.hyzenApp?.state.verifying)?0:now/1000;
  let rotationSettled=true;
- for(const name of ['yaw','elevation']){
+ if(!travel)for(const name of ['yaw','elevation']){
   if(magnetic&&!reduced.matches){
    const next=Motion.spring(pose[name],velocity[name],goal[name],dt);pose[name]=next.position;velocity[name]=next.velocity;
    if(!next.settled){moving=true;rotationSettled=false;}
@@ -272,8 +312,7 @@ function tick(now){
   }
  }
  if(magnetic&&rotationSettled)magnetic=false;
- pose.zoom+=(goal.zoom-pose.zoom)*smoothing;
- if(Math.abs(goal.zoom-pose.zoom)>.0001)moving=true;else pose.zoom=goal.zoom;
+ if(!travel){pose.zoom+=(goal.zoom-pose.zoom)*smoothing;if(Math.abs(goal.zoom-pose.zoom)>.0001)moving=true;else pose.zoom=goal.zoom;}
  for(const [code,key]of keys){
   const button=buttonFor(code),down=button?.classList.contains('down');
   const selected=button?.classList.contains('selected'),visited=button?.classList.contains('visited');
@@ -301,6 +340,7 @@ function tick(now){
  rendered++;
  lastLighting={...lighting,frontOutput:front};
  host.dataset.modelState='ready';
+ if(travelDone)finishTravel();
  if(--pendingFrames>0||moving)invalidate();
  else if(!reduced.matches&&!window.hyzenApp?.state.verifying&&(Lighting.animated('back',lighting.back)||Lighting.animated('front',lighting.front)||lastHit&&lighting.back.brightness>0&&[2,3,5,9].includes(lighting.back.mode)&&now/1000-lastHit.time<3))lightTimer=setTimeout(()=>{lightTimer=0;invalidate();},33);
 }
@@ -403,24 +443,24 @@ document.addEventListener('keydown',event=>{
  if(event.repeat||event.isComposing)return;
  for(const key of keys.values()){const button=buttonFor(key.node.userData.hyzenKeyCode);if(button?.dataset.event===event.code){lastHit={...key.coordinate,time:performance.now()/1000};invalidate(2);break;}}
 });
-canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;if(host)host.dataset.modelState='fallback';restorePhotoPositions();cancelAnimationFrame(frame);frame=0;});
+canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;if(travel)finishTravel();if(host)host.dataset.modelState='fallback';restorePhotoPositions();cancelAnimationFrame(frame);frame=0;});
 canvas.addEventListener('webglcontextrestored',()=>{
  contextLost=false;
  try{refreshEnvironment();renderer.shadowMap.needsUpdate=true;if(host){delete host.dataset.modelState;invalidate(3);}}catch(reason){fail(reason);}
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0;}else invalidate(2);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(travel&&travel.start!==null){Object.assign(pose,goal);finishTravel();}cancelAnimationFrame(frame);frame=0;}else invalidate(2);});
 window.addEventListener('blur',()=>{activePointer=null;host?.classList.remove('model-orbiting');hovering=null;invalidate();});
-const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting??true;if(visible)invalidate(2);else{cancelAnimationFrame(frame);frame=0;}});
+const visibilityObserver=new IntersectionObserver(entries=>{const entry=entries.find(value=>value.target===host);if(!entry)return;visible=entry.isIntersecting;if(visible||travel)invalidate(2);else{cancelAnimationFrame(frame);frame=0;}});
 const originalRefresh=refresh;
 function refreshView(){const previous=host;originalRefresh();if(previous!==host){if(previous)visibilityObserver.unobserve(previous);if(host)visibilityObserver.observe(host);}}
 
 // Read-only diagnostics are used by the native visual checks; no hardware calls.
 async function ready(){await load();refreshView();for(let i=0;i<100&&host&&host.dataset.modelState!=='ready'&&!error;i++)await new Promise(resolve=>setTimeout(resolve,30));return inspect();}
-function inspect(){return{keys:keys.size,loads,rendered,error:error||null,state:host?.dataset.modelState||'detached',view:host?.dataset.modelView||null,pose:{...pose},goal:{...goal},canvasCount:document.querySelectorAll('.keyboard-canvas').length,drawCalls:bloom?.info.calls,triangles:bloom?.info.triangles,dimensions:{...measured},scheduled:!!frame||!!lightTimer,lighting:lastLighting,studio:!!studio,frontStrip:!!frontStrip,bloom:!!bloom,scale:graphicScale,magnetic};}
+function inspect(){return{keys:keys.size,loads,rendered,error:error||null,state:host?.dataset.modelState||'detached',view:host?.dataset.modelView||null,pose:{...pose},goal:{...goal},canvasCount:document.querySelectorAll('.keyboard-canvas').length,drawCalls:bloom?.info.calls,triangles:bloom?.info.triangles,dimensions:{...measured},scheduled:!!frame||!!lightTimer,lighting:lastLighting,studio:!!studio,frontStrip:!!frontStrip,bloom:!!bloom,scale:graphicScale,magnetic,handoff:travel?{active:true,frames:travel.frames}:lastTravel};}
 function keyCenter(code){const key=keys.get(code);if(!key||!host)return null;const point=key.center.clone().applyMatrix4(key.node.matrixWorld).project(camera),rect=canvas.getBoundingClientRect();return{x:rect.left+(point.x+1)/2*rect.width,y:rect.top+(1-point.y)/2*rect.height};}
 function keyState(code){const key=keys.get(code);return key?{pressed:key.pressed,light:key.light,offset:key.y-key.node.position.y,led:key.led}:null;}
 function setScale(value){if(!Number.isInteger(value)||value<80||value>160||value%10)return;graphicScale=value;document.documentElement.style.setProperty('--keyboard-graphic-scale',value/100);resize();}
-window.Hyzen3D={refresh:refreshView,sync:()=>invalidate(2),ready,inspect,pick,keyCenter,keyState,reset,setScale,get scale(){return graphicScale;}};
+window.Hyzen3D={refresh:refreshView,sync:()=>invalidate(2),ready,inspect,pick,keyCenter,keyState,reset,setScale,handoff,get scale(){return graphicScale;}};
 refreshView();
 window.addEventListener('beforeunload',()=>{
  cancelAnimationFrame(frame);resizeObserver.disconnect();visibilityObserver.disconnect();

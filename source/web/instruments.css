@@ -142,7 +142,5 @@ input[type=range].dial-input{position:absolute;left:50%;top:50%;width:1px;height
 .rt-card .setting-row{min-height:59px}
 .actuation-card .setting-row{min-height:60px}
 .actuation-card .inline{margin-top:8px;justify-content:center}
-body[data-page=depth] .keyboard{max-width:660px}
-body[data-page=depth] .keyboard-card{padding-top:12px;padding-bottom:12px}
 @media(max-width:1160px){.card{border-radius:27px}.stat{padding:20px 16px;min-height:149px}.stat-value{font-size:26px}.stat-value .dot-readout{height:30px}.ruler-control{padding:16px 15px 12px}.dial-face{width:min(264px,100%)}.dial-value .dot-readout{height:35px}.actuation-card,.rt-card{padding:22px 20px}.ruler-control .dot-readout{height:31px}}
 @media(max-height:800px){.connect-stage .keyboard{max-width:700px}.dial-face{width:min(248px,100%)}.dial-value .dot-readout{height:34px}.ruler-control{padding-top:15px;padding-bottom:10px}.ruler-control .range-heading{gap:12px}.ruler-wrap,.ruler-svg,input[type=range].ruler-input{height:50px;min-height:50px}.stat{min-height:143px}.ruler-control .dot-readout{height:30px}}

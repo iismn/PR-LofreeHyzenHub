@@ -18,8 +18,8 @@ using Microsoft.Web.WebView2.Wpf;
 [assembly:AssemblyTitle("Lofree HUB")]
 [assembly:AssemblyProduct("Lofree HUB")]
 [assembly:AssemblyDescription("Lofree HYZEN 67 keyboard settings")]
-[assembly:AssemblyVersion("1.3.4.0")]
-[assembly:AssemblyFileVersion("1.3.4.0")]
+[assembly:AssemblyVersion("1.3.5.0")]
+[assembly:AssemblyFileVersion("1.3.5.0")]
 namespace HyzenControl {
  static class Program {
   internal const string AppUserModelId="Lofree.HUB";

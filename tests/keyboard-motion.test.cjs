@@ -17,3 +17,11 @@ test('wheel zoom has symmetric direction, normalized line deltas and hard bounds
 test('magnetic return is continuous and settles exactly at different frame rates',()=>{
  for(const fps of [20,30,60,120]){let p=.5,v=0,moved=false;for(let i=0;i<fps*2;i++){const next=M.spring(p,v,0,1/fps);if(i===0){assert.ok(next.position>0&&next.position<.5);moved=true;}p=next.position;v=next.velocity;}assert.ok(moved);assert.equal(p,0);assert.equal(v,0);}
 });
+
+test('live handoff interpolates position and size without overshooting either screen',()=>{
+ const from={left:80,top:160,width:1175,height:545},to={left:260,top:120,width:1010,height:443};
+ assert.deepEqual(M.blendRect(from,to,-1),from);assert.deepEqual(M.blendRect(from,to,2),to);
+ let previous=from;
+ for(let frame=1;frame<=60;frame++){const next=M.blendRect(from,to,frame/60);assert.ok(next.left>=previous.left&&next.left<=to.left);assert.ok(next.width<=previous.width&&next.width>=to.width);assert.ok(Math.abs(next.width-previous.width)<6);previous=next;}
+ assert.deepEqual(previous,to);
+});

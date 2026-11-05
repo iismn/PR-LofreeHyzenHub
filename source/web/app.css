@@ -70,7 +70,6 @@ main{overflow:auto;padding:22px 29px 25px;scrollbar-gutter:stable;position:relat
 .main-footer{font-size:10px;color:var(--dim);padding:14px 2px 0;min-height:28px}.empty-state{min-height:300px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;color:var(--muted);padding:36px}.empty-state i svg{width:43px;height:43px;stroke-width:1}.empty-state h2{color:var(--text)}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 19px;background:#23232d;border:1px solid #3b394b;box-shadow:0 8px 30px #0003;border-radius:11px;font-size:12px;z-index:10;max-width:70%;line-height:1.6}dialog{background:#1b1b24;color:var(--text);border:1px solid #393646;border-radius:17px;max-width:445px;width:90%;padding:26px}dialog::backdrop{background:#0008;backdrop-filter:blur(5px)}dialog p{font-size:12px;color:var(--muted);line-height:1.8;margin:15px 0 23px}.dialog-actions{display:flex;justify-content:flex-end;gap:8px}
 .busy #refresh svg{animation:spin 1.2s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
-.keyboard{view-transition-name:hyzen-keyboard}
 .connect-screen{position:absolute;inset:35px 0 0;z-index:4;display:grid;grid-template-rows:auto minmax(0,1fr) auto;align-items:center;padding:clamp(25px,5.4vh,54px) 6% 25px;isolation:isolate;overflow:hidden;background:#0b0c0f}
 .connect-screen:before,.connect-screen:after{content:'';position:absolute;z-index:-1;top:9%;bottom:13%;width:19%;border-radius:50%;filter:blur(70px);pointer-events:none;opacity:.12;background:radial-gradient(ellipse,#6a76c4,transparent 65%);transition:opacity .5s}
 .connect-screen:before{left:-12%}.connect-screen:after{right:-12%}
@@ -106,15 +105,9 @@ main{overflow:auto;padding:22px 29px 25px;scrollbar-gutter:stable;position:relat
 .connect-screen[data-phase="ready"] .connect-button{background:#b7b6f8;border-color:#cac8ff}
 .connect-screen[data-phase="ready"] .connect-trace span{background:#bbb8ef;opacity:.8}
 @keyframes connect-dot{0%,100%{opacity:.16;transform:scale(.8)}50%{opacity:.85;transform:scale(1.15)}}
-::view-transition-old(root){animation:screen-fade-out .28s ease both}
-::view-transition-new(root){animation:screen-fade-in .55s ease both}
-::view-transition-group(hyzen-keyboard){animation-duration:.7s;animation-timing-function:cubic-bezier(.22,.75,.2,1)}
-::view-transition-old(hyzen-keyboard),::view-transition-new(hyzen-keyboard){mix-blend-mode:normal;animation-duration:.55s}
-@keyframes screen-fade-out{to{opacity:0;filter:blur(4px)}}
-@keyframes screen-fade-in{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:blur(0)}}
 @media(max-height:800px){.connect-screen{padding-top:29px;padding-bottom:16px}.connect-heading h1{font-size:32px}.connect-stage .keyboard{max-width:720px}.connect-trace{height:45px;gap:6px;margin-bottom:13px}#connectStatus{margin-top:12px;min-height:30px}}
 @media(max-width:1160px){.shell{grid-template-columns:156px minmax(0,1fr)}aside{padding-left:9px;padding-right:9px}nav button{gap:10px;padding-left:12px;font-size:12px}main{padding-right:20px;padding-left:20px}.card{padding:19px}.key{font-size:9px}.key small{font-size:6px}.connection-row{padding:12px 15px}.stat{padding:17px 14px}.stat-value{font-size:23px}.effect-grid{grid-template-columns:repeat(4,1fr)}.editor-grid{gap:16px;grid-template-columns:minmax(0,1.4fr) minmax(190px,.8fr)}.binding-keys{grid-template-columns:repeat(8,minmax(0,1fr))}}
 @media(max-height:800px){aside{padding-top:17px}.brand{margin-bottom:21px;font-size:21px}nav{gap:2px}nav button{min-height:36px;padding-top:8px;padding-bottom:8px}.sidebar-bottom{padding-top:16px;gap:4px}main{padding-top:17px}.heading{margin-bottom:13px}.heading h1{font-size:23px}.connection-row{margin-bottom:12px}.keyboard{max-width:660px}.keyboard-card{padding-top:15px;padding-bottom:12px}.stat-value{margin-top:13px}.stat{min-height:123px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
-@media(prefers-reduced-motion:reduce){.connect-stage .keyboard{transform:none}::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+@media(prefers-reduced-motion:reduce){.connect-stage .keyboard{transform:none}}
 [hidden]{display:none!important}

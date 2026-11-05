@@ -1,5 +1,13 @@
 # Validation
 
+## 1.3.5 live 3D continuity
+
+- **57 Node tests** and **101/101 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.3.5-windows.json) / [minimum](validation/v1.3.5-windows-min.json).
+- Native checks require a live connection handoff with intermediate canvas rectangles and camera poses, then the same canvas mounted in the keyboard overview. The transition does not call the View Transition snapshot API.
+- Every 3D tab retained the same viewport position, width, height and camera zoom. Frame sampling found no photograph flash, loading-state reset or faded canvas during tab changes. Controls and the sidebar continued to animate.
+- A separate browser test used actual pointer drag and wheel events, preserving a nondefault rotation and zoom through all six tabs. It observed one canvas, one model load and zero photograph flashes. See the [browser report](validation/v1.3.5-browser.json).
+- Existing key hit targets, lighting, battery, context loss/recovery and KO/EN checks remained passing. Native verification recorded zero physical setting writes. Blender geometry, HID communication and local preference storage are unchanged.
+
 ## 1.3.4 battery overview
 
 - **56 Node tests** and **99/99 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.3.4-windows.json) / [minimum](validation/v1.3.4-windows-min.json).

@@ -80,7 +80,7 @@ with Image.open(output / "hero.gif") as gif:
         gif.load()
         total += gif.info["duration"]
     report = {"frames": gif.n_frames, "durationMs": total, "size": gif.size, "bytes": (output / "hero.gif").stat().st_size,
-              "source": "Lofree HUB 1.3.4 read-only native app captures", "method": "Position animation of unchanged real screenshots"}
+              "source": "Lofree HUB 1.3.5 read-only native app captures", "method": "Position animation of unchanged real screenshots"}
 print(json.dumps(report))
 for language in ["ko", "en"]:
     with Image.open(args.capture / f"{language}-general.png") as image:

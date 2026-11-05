@@ -1,4 +1,20 @@
 // Native read-only checks. Fixtures and control jobs never reach physical HID.
+export async function verifyViewContinuity({checks,modelReady}){
+ const {navigate}=window.hyzenApp,canvas=document.querySelector('#content .keyboard-canvas'),host=canvas.parentElement,views=[],frames=[];
+ const original=Hyzen3D.inspect().pose;let sampling=true;
+ const sample=()=>{if(!sampling)return;const image=document.querySelector('#content .keyboard-photo'),current=document.querySelector('#content .keyboard-canvas');if(current)frames.push({same:current===canvas,ready:current.parentElement.dataset.modelState==='ready',photo:Number(getComputedStyle(image).opacity),opacity:Number(getComputedStyle(current).opacity)});requestAnimationFrame(sample);};
+ requestAnimationFrame(sample);
+ try{
+  canvas.dispatchEvent(new WheelEvent('wheel',{deltaY:-100,bubbles:true,cancelable:true}));await modelReady();const zoomed=Hyzen3D.inspect().pose;
+  for(const page of ['home','light','depth','advanced','keyboard','test']){
+   await navigate(page);await modelReady();const rect=canvas.getBoundingClientRect(),view=Hyzen3D.inspect();views.push({page,width:rect.width,height:rect.height,left:rect.left,top:rect.top,pose:view.pose,same:canvas.parentElement===host&&document.querySelector('#content .keyboard-canvas')===canvas});
+  }
+  const baseline=views[0];
+  checks.push({name:'all-3d-tabs-keep-identical-viewport-and-camera-zoom',ok:views.every(view=>view.same&&['width','height','left','top'].every(key=>Math.abs(view[key]-baseline[key])<1)&&['yaw','elevation','zoom'].every(key=>Math.abs(view.pose[key]-zoomed[key])<.0001)),views});
+  checks.push({name:'tab-transitions-never-reveal-photo-or-reload-shared-canvas',ok:frames.length>10&&frames.every(frame=>frame.same&&frame.ready&&frame.photo===0&&frame.opacity===1)&&Hyzen3D.inspect().loads===1,frames:frames.length});
+ }finally{sampling=false;Hyzen3D.reset();await modelReady();await navigate('light');await modelReady();}
+}
+
 export async function verifyBattery({checks}){
  const {device,renderBattery}=window.hyzenApp,card=document.querySelector('#batteryStat'),canvas=document.querySelector('#content .keyboard-canvas');
  const saved={info:device.info,battery:device.battery,rpc:device.rpc,language:HyzenLocale.language},requests=[];
