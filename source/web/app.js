@@ -2,6 +2,7 @@
 const L=HyzenLocale,t=value=>L.text(value);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],P=HyzenProtocol,C=HYZEN_CONFIG,I=HyzenInstruments;
 const paths={home:'M3 10 12 3l9 7v10H3Z M9 20v-7h6v7',keyboard:'M3 5h18v14H3Z M6 9h1m3 0h1m3 0h1m3 0h0M6 12h1m3 0h1m3 0h1m3 0h0M7 16h10',depth:'M5 3v18M19 3v18M3 7h4m-4 10h4M10 5h4v10h-4Z M12 18v3m-2-2 2 2 2-2',advanced:'M4 7h16M7 4v6M4 17h16M17 14v6',light:'M9 18h6m-5 3h4M8 13a6 6 0 1 1 8 0l-1 2H9ZM12 1v1',test:'M4 4h16v16H4Z M8 12l3 3 6-7',calibration:'M5 3v18M12 3v18M19 3v18M3 8h4m3 7h4m3-8h4',settings:'M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',help:'M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3m0 3h0 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',macro:'M8 4 4 8l4 4M4 8h12a4 4 0 0 1 0 8h-5m1-4-4 4 4 4',refresh:'M20 7v5h-5M4 17v-5h5M19 12a7 7 0 0 0-12-5M5 12a7 7 0 0 0 12 5',arrow:'M4 12h16m-6-6 6 6-6 6',moon:'M20 15A9 9 0 0 1 9 3a9 9 0 1 0 11 12',sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1',link:'M9 8 7 8a4 4 0 0 0 0 8h3m5-8h2a4 4 0 0 1 0 8h-3M8 12h8',check:'M5 12l4 4L19 6'};
+paths.battery='M3 7h16v10H3ZM22 10v4M7 10v4m4-4v4m4-4v4';
 const icon=name=>`<i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="${paths[name]||paths.keyboard}"/></svg></i>`;
 const esc=s=>t(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nav=[['home','키보드'],['keyboard','키 매핑'],['depth','입력 깊이'],['advanced','고급 키'],['light','조명'],['macro','매크로'],['test','키 테스트'],['calibration','보정'],['settings','일반'],['help','도움말']];
@@ -109,7 +110,7 @@ async function transitionScreen(name){
 async function disconnectToLanding(){
  if(state.recording)stopRecording();
  await live.discard();
- await rpc('disconnect');device.connected=false;state.pressed.clear();setConnectionPhase('idle');
+ await rpc('disconnect');device.connected=false;device.battery=null;state.pressed.clear();setConnectionPhase('idle');
  await transitionScreen('landing');$('#content').replaceChildren();updateConnection();
 }
 
@@ -150,16 +151,20 @@ function fold(title,body,extra=''){return `<details class="option-fold ${extra}"
 function toggle(id,title,desc,on){return `<div class="setting-row"><label for="${id}">${title}</label><input type="checkbox" class="switch" id="${id}" ${on?'checked':''}></div>`;}
 function actionRow(){return '';}
 function dotNumber(value){return I.dotText(value);}
+function batteryBody(){
+ const wireless=device.info.productId===37,level=wireless&&Number.isInteger(device.battery)?device.battery:null;
+ const foot=wireless?(level===null?'확인할 수 없음':''):'USB 전원';
+ return '<div class="stat-label">'+icon('battery')+'배터리</div><div class="stat-value">'+(level===null?'—':dotNumber(level)+'<small>%</small>')+'</div>'+(foot?'<div class="stat-foot">'+foot+'</div>':'');
+}
+function renderBattery(){const card=$('#batteryStat');if(card){card.innerHTML=L.html(batteryBody());HyzenBlockGlow.refresh(card.parentElement);}}
 function home(){
  const rate=device.global[device.info.productId===37?54:53],frequency=rate===0?'8000':rate===4?'1000':null;
- const first=Math.round(P.u16(device.global,34)/60),second=Math.round(P.u16(device.global,36)/60);
  const stats=[
   ['depth','스위치',dotNumber(device.func[56]===2?'MAG':'MEC'),'', ''],
   ['link','폴링레이트',frequency?dotNumber(frequency):'—','Hz',device.info.connection],
-  ['keyboard','펌웨어',device.versions.keyboard?'<small>V</small>'+dotNumber(device.versions.keyboard):'—','',device.versions.receiver?'수신기 V'+device.versions.receiver:'키보드'],
-  ['moon','자동 절전',device.global[33]?dotNumber(first):'꺼짐',device.global[33]?'분':'',device.global[33]?'2단계 '+second+'분':'']
+  ['keyboard','펌웨어',device.versions.keyboard?'<small>V</small>'+dotNumber(device.versions.keyboard):'—','',device.versions.receiver?'수신기 V'+device.versions.receiver:'키보드']
  ];
- return keyboard(false)+'<div class="stats">'+stats.map(([ic,label,value,unit,foot])=>'<article class="card stat"><div class="stat-label">'+icon(ic)+label+'</div><div class="stat-value">'+value+(unit?'<small>'+unit+'</small>':'')+'</div>'+(foot?'<div class="stat-foot">'+foot+'</div>':'')+'</article>').join('')+'</div>';
+ return keyboard(false)+'<div class="stats">'+stats.map(([ic,label,value,unit,foot])=>'<article class="card stat"><div class="stat-label">'+icon(ic)+label+'</div><div class="stat-value">'+value+(unit?'<small>'+unit+'</small>':'')+'</div>'+(foot?'<div class="stat-foot">'+foot+'</div>':'')+'</article>').join('')+'<article id="batteryStat" class="card stat">'+batteryBody()+'</article></div>';
 }
 function keymap(){const list=state.category==='basic'?catalogue:state.category==='media'?palettes.media:state.category==='lightkeys'?palettes.light:state.category==='special'?[...palettes.special,{label:'비활성',code:[0,0,0]}]:state.category==='macro'?Array.from({length:28},(_,i)=>{const m=device.cache.macros?.[i];return{label:'M'+(i+1),code:[m?.mode?0x70:0x71,i,m?.mode||m?.loops||1]};}):[];const i=firstSelected(),current=i<0?'—':labelFor(device.binding(i,state.layer));return keyboard()+`<article class="card"><div class="section-heading"><h2>동작 지정</h2><select id="layerSelect" aria-label="편집할 레이어">${[[-1,'기본 레이어'],[0,'Windows · Fn'],[2,'Windows · Fn + Shift'],[1,'macOS · Fn'],[3,'macOS · Fn + Shift']].map(([v,l])=>option(v,l,state.layer)).join('')}</select></div><div class="editor-grid"><div><div class="pill-tabs">${[['basic','기본 키'],['media','미디어'],['lightkeys','조명 키'],['special','특수 · 마우스'],['macro','매크로']].map(([id,title])=>`<button data-category="${id}" class="${id===state.category?'active':''}">${title}</button>`).join('')}</div><div class="binding-keys" data-category="${state.category}">${list.map(k=>`<button data-binding="${P.hex(k.code)}" title="${esc(k.label)}" class="${P.hex(k.code)===P.hex(state.binding)?'chosen':''}">${esc(k.label)}</button>`).join('')}</div></div><div><p class="small muted">현재 동작: ${esc(current)}</p><div class="binding-preview"><span class="big-key">${esc(i<0?'선택':nameForIndex(i))}</span>${icon('arrow')}<span class="big-key" id="bindingTarget">${esc(labelFor(state.binding))}</span></div><label class="small muted" for="modifierSelect">보조키 조합</label><select id="modifierSelect" aria-label="보조키 조합">${[[0,'없음'],[1,'Ctrl'],[2,'Shift'],[4,'Alt'],[8,'Win'],[3,'Ctrl + Shift'],[5,'Ctrl + Alt'],[6,'Alt + Shift'],[9,'Win + Ctrl'],[10,'Win + Shift'],[16,'오른쪽 Ctrl'],[32,'오른쪽 Shift'],[64,'오른쪽 Alt'],[128,'오른쪽 Win'],[160,'오른쪽 Win + Shift']].map(([v,l])=>option(v,l,state.binding[0]===32&&state.binding[2]?state.binding[1]:0)).join('')}</select></div></div>${actionRow('saveMap','선택한 키에 저장','Fn 레이어는 키보드 전체에서 공유합니다. 기본 레이어는 현재 프로필에 저장됩니다.')}</article>`;}
 function depth(){
@@ -197,7 +202,7 @@ function settings(){
  const language=`<div class="setting-row"><div class="setting-label" id="languageLabel">언어</div><div class="language-toggle" role="group" aria-labelledby="languageLabel">${['ko','en'].map(code=>`<button data-language="${code}" aria-pressed="${L.language===code}">${code.toUpperCase()}</button>`).join('')}</div></div><div class="setting-row"><label for="keyboardScale">키보드 그래픽 크기</label><select id="keyboardScale">${graphicScaleOptions()}</select></div>`;
  return `<article class="card">${language}<div class="setting-row"><label for="axisMode">스위치 모드</label><select id="axisMode">${option(2,'MAG',f[56])}${option(1,'MEC',f[56])}</select></div>${fold('키 잠금 · 고속 응답',locks)}${actionRow('saveMode')}</article>${[['절전',sleep],['폴링레이트',rate],['프로필 · 연결',profile],[cap.firmware?'업데이트 · 초기화':'초기화',firmware]].map(([title,body])=>`<details class="card option-card"><summary>${title}</summary><div class="fold-body">${body}</div></details>`).join('')}`;
 }
-function help(){return `<article class="card help-card"><h2>Lofree HUB 1.3.3</h2><p>Lofree Hyzen 67용 Windows 제어 프로그램입니다. USB 또는 2.4GHz로 연결해 키 매핑, 입력 깊이, 조명 등을 설정합니다.</p></article>${[['연결과 프로필','USB 유선 또는 2.4GHz 수신기로 연결합니다. Bluetooth에서는 설정용 HID 인터페이스가 제공되지 않습니다. 상단에서 7개 프로필을 전환할 수 있고, 키 매핑과 조명 등은 현재 프로필에 저장합니다.'],['저장과 설정 확인','변경한 값은 자동으로 키보드에 적용합니다. 연속 조작은 짧게 묶어 전송하고, 같은 값을 다시 읽어 확인합니다. 하단에서 적용 상태를 확인하세요. 실패하면 ‘다시 적용’을 누르거나 새로고침으로 장치 값을 다시 읽을 수 있습니다.'],['키 매핑과 Fn 레이어','키를 선택한 뒤 새 동작을 지정합니다. Ctrl을 누르며 선택하면 여러 키를 편집할 수 있습니다. Fn과 고정 키는 변경할 수 없습니다. 네 가지 Fn 레이어는 프로필 전체에서 공유됩니다.'],['입력 깊이와 고급 키','MAG 모드에서는 장치의 보정 값으로 mm와 원시 값을 변환합니다. RT는 누름·해제 이동 거리를 따로 조절하고, MT·TGL·DKS·RS·SOCD·HT를 설정할 수 있습니다. 두 키 기능은 서로 다른 키를 연결해야 합니다.'],['키 테스트와 매크로','입력 기록은 이 프로그램 창이 활성 상태일 때만 메모리에 보관합니다. 창을 벗어나면 녹화를 중지합니다. Fn이나 Windows가 가로채는 단축키는 일반 입력 이벤트에 나타나지 않을 수 있습니다. 매크로는 녹화를 중지하면 자동 적용합니다. 키 매핑에서 M1~M28을 지정하세요.'],['보정 · 펌웨어 · 초기화','이 버전의 보정, 펌웨어 쓰기, 공장 초기화는 공식 드라이버로 연결합니다. 프로그램에서 공식 도구를 열면 HID 연결을 먼저 해제합니다. 보정은 유선 MAG 모드에서 진행하세요.'],['백업 범위','내보내기는 현재 프로필의 기본 레이어 매핑과 기능 설정을 포함합니다. Fn 레이어·고급 키·입력 깊이·매크로 데이터는 이 백업 형식에 포함되지 않습니다. 원본 JSON 파일을 별도로 보관하세요.']].map(([t,p])=>`<details class="card help-card"><summary>${t}</summary><p>${p}</p></details>`).join('')}<button data-action="official">Lofree 공식 Hyzen 드라이버 ↗</button>`;}
+function help(){return `<article class="card help-card"><h2>Lofree HUB 1.3.4</h2><p>Lofree Hyzen 67용 Windows 제어 프로그램입니다. USB 또는 2.4GHz로 연결해 키 매핑, 입력 깊이, 조명 등을 설정합니다.</p></article>${[['연결과 프로필','USB 유선 또는 2.4GHz 수신기로 연결합니다. Bluetooth에서는 설정용 HID 인터페이스가 제공되지 않습니다. 상단에서 7개 프로필을 전환할 수 있고, 키 매핑과 조명 등은 현재 프로필에 저장합니다.'],['저장과 설정 확인','변경한 값은 자동으로 키보드에 적용합니다. 연속 조작은 짧게 묶어 전송하고, 같은 값을 다시 읽어 확인합니다. 하단에서 적용 상태를 확인하세요. 실패하면 ‘다시 적용’을 누르거나 새로고침으로 장치 값을 다시 읽을 수 있습니다.'],['키 매핑과 Fn 레이어','키를 선택한 뒤 새 동작을 지정합니다. Ctrl을 누르며 선택하면 여러 키를 편집할 수 있습니다. Fn과 고정 키는 변경할 수 없습니다. 네 가지 Fn 레이어는 프로필 전체에서 공유됩니다.'],['입력 깊이와 고급 키','MAG 모드에서는 장치의 보정 값으로 mm와 원시 값을 변환합니다. RT는 누름·해제 이동 거리를 따로 조절하고, MT·TGL·DKS·RS·SOCD·HT를 설정할 수 있습니다. 두 키 기능은 서로 다른 키를 연결해야 합니다.'],['키 테스트와 매크로','입력 기록은 이 프로그램 창이 활성 상태일 때만 메모리에 보관합니다. 창을 벗어나면 녹화를 중지합니다. Fn이나 Windows가 가로채는 단축키는 일반 입력 이벤트에 나타나지 않을 수 있습니다. 매크로는 녹화를 중지하면 자동 적용합니다. 키 매핑에서 M1~M28을 지정하세요.'],['보정 · 펌웨어 · 초기화','이 버전의 보정, 펌웨어 쓰기, 공장 초기화는 공식 드라이버로 연결합니다. 프로그램에서 공식 도구를 열면 HID 연결을 먼저 해제합니다. 보정은 유선 MAG 모드에서 진행하세요.'],['백업 범위','내보내기는 현재 프로필의 기본 레이어 매핑과 기능 설정을 포함합니다. Fn 레이어·고급 키·입력 깊이·매크로 데이터는 이 백업 형식에 포함되지 않습니다. 원본 JSON 파일을 별도로 보관하세요.']].map(([t,p])=>`<details class="card help-card"><summary>${t}</summary><p>${p}</p></details>`).join('')}<button data-action="official">Lofree 공식 Hyzen 드라이버 ↗</button>`;}
 async function loadAdvanced(prefetched=undefined){if(state.page!=='advanced'||firstSelected()<0)return;const v=prefetched===undefined?await device.advancedConfig(firstSelected()):prefetched;if(v){state.advanced=v.kind;render();if(v.tap)$('#advancedTap').value=P.hex(v.tap);if(v.hold)$('#advancedHold').value=P.hex(v.hold);if(v.delay!==undefined)$('#advancedDelay').value=v.delay;if(v.partner!==undefined)$('#partnerKey').value=v.partner;if(v.priority!==undefined)$('#advancedPriority').value=v.priority;if(v.mm!==undefined){$('#advancedMm').value=v.mm;syncInstrument($('#advancedMm'),true);}if(v.rtEnabled!==undefined)$('#advancedRt').checked=v.rtEnabled;if(v.rows)for(let n=0;n<4;n++){$('#dksKey'+n).value=P.hex(v.rows[n].code);$('#dksPoint'+n).value=v.points[n].toFixed(2);}}}
 async function navigate(page){
  if(!device.connected||!availablePage(page))return;
@@ -330,7 +335,7 @@ async function prepareClose(){
  if(state.busy){toast('진행 중인 작업이 끝난 뒤 닫아주세요.');return false;}
  try{if(state.recording)stopRecording();await live.flush();return true;}catch(error){showError(error);return false;}
 }
-window.hyzenApp={device,state,navigate,render,rpc,prepareClose,switchLanguage,refreshLocale,setGraphicScale};
+window.hyzenApp={device,state,navigate,render,renderBattery,rpc,prepareClose,switchLanguage,refreshLocale,setGraphicScale};
 window.runVerification=async()=>{
  state.verifying=true;await live.pause();const bootLanguage=L.language,bootLabel=$('#startConnectLabel').textContent;L.setLanguage('ko');refreshLocale();HyzenBlockGlow.beginVerification();
  const checks=[],phases=[],wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -427,6 +432,7 @@ window.runVerification=async()=>{
     checks.push({name:'3d-key-test-presses-highlights-and-releases-cap',ok:down&&!$('.photo-key[data-event="KeyA"]').classList.contains('down')&&pressed.pressed>.99&&pressed.light>.85&&Math.abs(pressed.offset-1.2)<.01&&Hyzen3D.keyState(key.dataset.modelKey).pressed<.01});
    }
    if(page==='home'){
+    await (await import('./model-verification.js')).verifyBattery({checks});
     checks.push({name:'reference-surfaces',ok:getComputedStyle(document.body).backgroundImage.includes('radial-gradient')&&parseFloat(getComputedStyle($('.stat')).borderRadius)>=27&&!!$('.stat .dot-readout')});
     const savedMode=device.func[56],serialBefore=serial,modes=[];
     try{for(const [value,label]of [[2,'MAG'],[1,'MEC']]){device.func[56]=value;render();const readout=$('.stat:first-child .stat-value .dot-readout');modes.push({label,ok:readout?.getAttribute('aria-label')===label&&readout.querySelectorAll('circle').length>40&&$('.stat:first-child .stat-value').textContent.trim()===''});}}

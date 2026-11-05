@@ -1,6 +1,6 @@
 'use strict';
 const live=new HyzenLive.LiveApply({execute:applyLiveJob,onState:liveState,delay:180});
-let autoProbe=false,probeJobs=[],suspendAutoInput=0,watchRunning=false,identicalVerification=false,validationError=null,lastLiveState={phase:'idle'};
+let autoProbe=false,probeJobs=[],suspendAutoInput=0,watchRunning=false,batteryRunning=false,identicalVerification=false,validationError=null,lastLiveState={phase:'idle'};
 function currentCapabilities(){return HyzenLive.capabilities(device.info,device.func?.[56]===2);}
 function availablePage(page){return page!=='calibration'||currentCapabilities().calibration;}
 function updateNavigationVisibility(){for(const button of document.querySelectorAll('#nav [data-page]'))button.hidden=!availablePage(button.dataset.page);HyzenPageMotion.setActive(state.page,false);}
@@ -101,7 +101,7 @@ function autoInput(event){
 document.addEventListener('input',autoInput);
 document.addEventListener('change',event=>{if(event.target.matches('select,input[type=checkbox]'))autoInput(event);});
 async function watchConnection(){
- if(watchRunning||!device.connected||state.verifying||state.busy||live.active||instrumentDrag||state.recording)return;
+ if(watchRunning||batteryRunning||!device.connected||state.verifying||state.busy||live.active||instrumentDrag||state.recording)return;
  watchRunning=true;
  try{
   const current=device.info.productId,list=await rpc('scan');if(state.busy||live.active||!device.connected||device.info.productId!==current)return;
@@ -112,7 +112,15 @@ async function watchConnection(){
  }catch{}finally{watchRunning=false;}
 }
 setInterval(watchConnection,3000);
-window.HyzenAutoApply={live,scheduleAuto,collectLiveJob,currentCapabilities,updateNavigationVisibility,watchConnection,
+async function watchBattery(){
+ if(batteryRunning||watchRunning||document.hidden||document.hasFocus&&!document.hasFocus()||!device.connected||device.info?.productId!==37||state.page!=='home'||state.verifying||state.busy||live.busy||instrumentDrag||state.recording||Date.now()-device.batteryUpdatedAt<30000)return;
+ batteryRunning=true;const info=device.info;
+ try{await device.refreshBattery();if(device.connected&&device.info===info&&state.page==='home')renderBattery();}catch{}finally{batteryRunning=false;}
+}
+setInterval(watchBattery,30000);
+document.addEventListener('visibilitychange',watchBattery);
+document.addEventListener('focusin',watchBattery);
+window.HyzenAutoApply={live,scheduleAuto,collectLiveJob,currentCapabilities,updateNavigationVisibility,watchConnection,watchBattery,
  beginProbe:()=>{autoProbe=true;probeJobs=[];live.resume();},
  endProbe:async()=>{await live.discard();live.paused=true;autoProbe=false;return probeJobs.slice();},
  verifyIdentical:async()=>{identicalVerification=true;live.resume();try{const input=document.querySelector('#lightBrightness');input.dispatchEvent(new Event('input',{bubbles:true}));await live.flush();return live.last;}finally{identicalVerification=false;await live.pause();}}

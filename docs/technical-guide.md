@@ -19,7 +19,7 @@ node --test .\tests\*.test.cjs
 | 경로 | 역할 |
 | --- | --- |
 | `source/App.cs` | WPF 창, WebView2, 메시지 검증, 종료 전 적용 처리, 앱 ID·아이콘 |
-| `source/HidDevice.cs` | Windows HID 열거와 보고서 전송 |
+| `source/HidDevice.cs` | Windows HID 열거, 보고서 전송과 온라인·배터리 상태 조회 |
 | `source/UserPreferences.cs` | UI 언어의 저장·초기 로드·오류 복구 |
 | `source/web/translations.js` | KO 원문과 EN 번역·동적 문구 패턴 |
 | `source/web/i18n.js` | 문구·접근성 속성 번역과 로캘 선택 |

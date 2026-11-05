@@ -122,6 +122,25 @@ namespace HyzenControl {
     gate.Release();
    }
   }
+  public async Task<byte> QueryStatus(byte command) {
+   if(command!=0xaa&&command!=0x1a)throw new ArgumentOutOfRangeException("command");
+   await gate.WaitAsync();bool started=false;
+   try {
+    byte[] old;while(incoming.TryTake(out old)){}
+    bool wired=Info.productId!=37;
+    await Send(BuildPacket(wired,1,0,24,null));Wait(1);started=true;
+    // The official online/battery queries use an empty payload, not a memory read.
+    await Send(BuildPacket(wired,command,0,0,new byte[0]));
+    byte[] reply=Wait(command,0);
+    if(reply.Length<9)throw new IOException("Battery status reply is incomplete.");
+    byte value=reply[8];
+    await Send(BuildPacket(wired,2,0,24,null));Wait(2);started=false;
+    return value;
+   } finally {
+    if(started&&!disposed)try{Send(BuildPacket(Info.productId!=37,2,0,24,null)).GetAwaiter().GetResult();}catch{}
+    gate.Release();
+   }
+  }
   public void Dispose() { if(disposed)return;disposed=true;if(stream!=null)stream.Dispose();incoming.CompleteAdding(); }
   [StructLayout(LayoutKind.Sequential)] struct InterfaceData { public int cbSize;public Guid guid;public int flags;public IntPtr reserved; }
   [StructLayout(LayoutKind.Sequential)] struct Attributes { public int Size;public ushort VendorID,ProductID,VersionNumber; }

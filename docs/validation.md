@@ -1,5 +1,13 @@
 # Validation
 
+## 1.3.4 battery overview
+
+- **56 Node tests** and **99/99 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.3.4-windows.json) / [minimum](validation/v1.3.4-windows-min.json).
+- The connected HYZEN67 receiver returned **23%** through the official empty-payload online and battery queries. The current profile's complete 64-byte function block matched before and after the queries; no setting writes were made. See the [read-only battery report](validation/v1.3.4-battery.json).
+- Native fixtures checked 0%, 23% and 100%, the dot halo, unavailable readings and English USB-power text. Updating the card preserved the existing 3D canvas and did not issue HID requests.
+- Pure tests cover invalid replies, failed queries, USB behavior, replies from a previous connection, the minimum 30-second refresh interval, and suppression before manual connection, off-screen or during editing.
+- Native verification recorded zero physical setting writes. Existing sleep controls remain in General; the change replaces only the overview card. USB battery percentages and charging state are not fabricated.
+
 ## 1.3.3 return range and connection-screen size
 
 - **51 Node tests** and **96/96 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.3.3-windows.json) / [minimum](validation/v1.3.3-windows-min.json).

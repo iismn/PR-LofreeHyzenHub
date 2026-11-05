@@ -19,12 +19,12 @@ function mmToRaw(mm,maxDiff,maxMm,curve,linear=false){
 }
 const lightGroups={back:{mode:1,speed:3,direction:4,colorMode:5,rgb:6,brightness:30,scale:125},front:{mode:38,speed:40,direction:41,colorMode:42,rgb:43,brightness:31,scale:100},receiver:{mode:49,speed:52,direction:55,colorMode:16,rgb:10,brightness:32,scale:255}};
 class Hyzen {
- constructor(rpc,curve){this.rpc=rpc;this.curve=curve;this.connected=false;this.profile=0;this.cache={};this.maxMm=3.5;this.minMm=.01;}
+ constructor(rpc,curve){this.rpc=rpc;this.curve=curve;this.connected=false;this.profile=0;this.cache={};this.maxMm=3.5;this.minMm=.01;this.battery=null;this.batteryUpdatedAt=0;}
  async read(command,length,offset=0){const a=await this.rpc('read',{command,length,offset});if(!Array.isArray(a)||a.length!==length||a.some(x=>!Number.isInteger(x)||x<0||x>255))throw Error('장치 데이터 길이가 올바르지 않습니다.');return a;}
  async write(command,data,offset=0){if(!Array.isArray(data)||data.some(x=>!Number.isInteger(x)||x<0||x>255))throw Error('저장 데이터가 올바르지 않습니다.');return this.rpc('write',{command,data,offset});}
  async verified(writeCommand,readCommand,data,offset=0){await this.write(writeCommand,data,offset);const actual=await this.read(readCommand,data.length,offset);if(actual.some((v,i)=>v!==data[i]))throw Error('저장 후 장치 값이 일치하지 않습니다. 새로고침으로 현재 설정을 확인하세요.');return actual;}
  async connect(onStage){
-  this.connected=false;
+  this.connected=false;this.battery=null;
   try{
    if(onStage)onStage('opening');
    this.info=await this.rpc('connect',{});
@@ -40,6 +40,13 @@ class Hyzen {
  }
  async refresh(){this.global=await this.read(5,64);this.profile=this.global[0];if(this.profile>6)throw Error('지원하지 않는 프로필 번호입니다.');this.func=await this.read(5,64,this.profile*64);this.defaults=await this.read(7,384);this.matrix=await this.read(8,384,this.profile*384);this.cache={};this.versions={};
   for(const [name,cmd]of [['keyboard',0x28],['receiver',0x29]]){if(name==='receiver'&&this.info.productId!==37)continue;try{let v=await this.read(cmd,2);this.versions[name]=Number(v[1].toString(16))*100+Number(v[0].toString(16));}catch{this.versions[name]=null;}}
+  await this.refreshBattery();
+ }
+ async refreshBattery(){
+  const info=this.info;let value=null;
+  if(info?.productId===37)try{value=await this.rpc('battery');}catch{}
+  if(info===this.info){this.battery=Number.isInteger(value)&&value>=0&&value<=100?value:null;this.batteryUpdatedAt=Date.now();}
+  return this.battery;
  }
  async module(name){if(this.cache[name])return this.cache[name];if(name==='fn'){const a=[];for(let layer=0;layer<4;layer++)a.push(...await this.read(0x26,384,layer*384));this.cache.fn=a;return a;}
   if(name==='actuation'){

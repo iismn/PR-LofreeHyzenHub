@@ -24,6 +24,10 @@ Language is a local app preference. Switching it does not send keyboard settings
 
 ![English General settings](images/settings-en.png)
 
+## Battery
+
+The fourth card in the keyboard overview shows the device-reported battery percentage on 2.4 GHz. It refreshes about every 30–60 seconds while that page is focused, visible and idle. USB shows **USB power**; an unavailable reading shows **— / Unavailable**. Set sleep times under **General → Sleep**.
+
 ## Automatic apply
 
 Change a setting to apply it without a save button. Continuous edits are coalesced and sent in order; the final value is read back for verification. Pending edits are processed before changing keys, layers, profiles or pages, and before closing the app.

@@ -1,4 +1,19 @@
 // Native read-only checks. Fixtures and control jobs never reach physical HID.
+export async function verifyBattery({checks}){
+ const {device,renderBattery}=window.hyzenApp,card=document.querySelector('#batteryStat'),canvas=document.querySelector('#content .keyboard-canvas');
+ const saved={info:device.info,battery:device.battery,rpc:device.rpc,language:HyzenLocale.language},requests=[];
+ const readout=()=>card.querySelector('.dot-readout')?.getAttribute('aria-label');
+ checks.push({name:'home-battery-card-replaces-auto-sleep-and-shows-device-status',ok:document.querySelectorAll('.stats .stat').length===4&&card.textContent.includes('배터리')&&!document.querySelector('.stats').textContent.includes('자동 절전')&&(saved.battery===null?!readout():readout()===String(saved.battery)),battery:saved.battery});
+ try{
+  device.rpc=async action=>{requests.push(action);throw Error('Unexpected hardware request');};
+  const values=[0,23,100].map(value=>{device.battery=value;renderBattery();return{value,ok:readout()===String(value)&&card.textContent.includes('%')&&!!card.querySelector('.dot-halo')&&card.hasAttribute('data-glow-block')};});
+  checks.push({name:'battery-live-card-update-preserves-3d-and-displays-empty-to-full-without-hid',ok:values.every(value=>value.ok)&&document.querySelector('#content .keyboard-canvas')===canvas&&canvas.isConnected&&requests.length===0,values});
+  device.battery=null;renderBattery();const unknown=!readout()&&!card.textContent.includes('%')&&card.textContent.includes('확인할 수 없음');
+  device.info={...saved.info,productId:36};device.battery=99;HyzenLocale.setLanguage('en');renderBattery();
+  checks.push({name:'battery-unavailable-and-usb-power-localize-without-fake-charge',ok:unknown&&!readout()&&!card.textContent.includes('%')&&card.textContent.includes('USB power')&&card.textContent.includes('Battery')&&requests.length===0});
+ }finally{device.info=saved.info;device.battery=saved.battery;device.rpc=saved.rpc;HyzenLocale.setLanguage(saved.language);renderBattery();}
+}
+
 export async function verifyLandingScale({checks,modelReady}){
  const host=document.querySelector('#connectVisual .model-host'),saved=Hyzen3D.scale;
  const measure=()=>{const r=host.getBoundingClientRect();return{width:r.width,height:r.height,scale:Number(getComputedStyle(host).getPropertyValue('--keyboard-graphic-scale'))};};

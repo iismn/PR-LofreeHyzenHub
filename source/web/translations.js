@@ -13,6 +13,7 @@ const messages={
  '공식 드라이버 ↗':'Official driver ↗','Lofree 공식 Hyzen 드라이버 ↗':'Official Lofree Hyzen driver ↗','공식 보정 화면 열기 ↗':'Open official calibration ↗','공식 업데이트 ↗':'Official update ↗',
  'Lofree Hyzen 67 — 투명 키캡과 금속 하우징':'Lofree Hyzen 67 — transparent keycaps and metal housing','Hyzen 67 키보드':'Hyzen 67 keyboard',
  '스위치':'Switch','스위치 모드':'Switch mode','폴링레이트':'Polling rate','펌웨어':'Firmware','자동 절전':'Auto sleep','꺼짐':'Off','분':'min','단계':'step',
+ '배터리':'Battery','USB 전원':'USB power','확인할 수 없음':'Unavailable',
  '동작 지정':'Assign action','편집할 레이어':'Layer to edit','기본 레이어':'Base layer','기본 키':'Basic keys','미디어':'Media','조명 키':'Lighting keys','특수 · 마우스':'Special · Mouse',
  '설정할 키를 선택하세요.':'Select a key to configure.','설정할 키를 먼저 선택하세요.':'Select a key first.','키를 먼저 선택하세요.':'Select a key first.',
  '키를 누르면 해당 위치가 밝아집니다.':'Press a key to highlight its position.','전체':'All','해제':'Clear','선택':'Select','없음':'None','비활성':'Disabled',

@@ -18,8 +18,8 @@ using Microsoft.Web.WebView2.Wpf;
 [assembly:AssemblyTitle("Lofree HUB")]
 [assembly:AssemblyProduct("Lofree HUB")]
 [assembly:AssemblyDescription("Lofree HYZEN 67 keyboard settings")]
-[assembly:AssemblyVersion("1.3.3.0")]
-[assembly:AssemblyFileVersion("1.3.3.0")]
+[assembly:AssemblyVersion("1.3.4.0")]
+[assembly:AssemblyFileVersion("1.3.4.0")]
 namespace HyzenControl {
  static class Program {
   internal const string AppUserModelId="Lofree.HUB";
@@ -162,6 +162,12 @@ namespace HyzenControl {
        }
        if(action=="disconnect"){if(device!=null)device.Dispose();device=null;return (object)true;}
        if(device==null)throw new IOException("키보드를 먼저 연결하세요.");
+       if(action=="battery") {
+        if(device.Info.productId!=37)return null;
+        if(await device.QueryStatus(0xaa)==0)return null;
+        byte percent=await device.QueryStatus(0x1a);
+        return percent<=100?(object)(int)percent:null;
+       }
        int cmd=Convert.ToInt32(m["command"]),offset=Convert.ToInt32(m["offset"]);
        if(action=="read") {
         if(!ReadCommands.Contains(cmd))throw new ArgumentException("허용되지 않은 읽기 명령입니다.");
