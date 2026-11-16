@@ -21,7 +21,8 @@ class Check {
   Require(rejected&&File.ReadAllText(path)==before&&prefs.Language=="ko","Invalid language leaves file and state unchanged");
   File.WriteAllText(path,"{broken");Require(new UserPreferences(path).Language=="ko","Corrupt preference fallback");
   File.WriteAllText(path,"{\"language\":\"fr\"}");Require(new UserPreferences(path).Language=="ko","Unknown preference fallback");
-  prefs.SetLanguage("en");Require(File.ReadAllText(path)=="{\"language\":\"en\",\"keyboardScale\":120}","Only local UI preferences are stored");
+  prefs.SetLanguage("en");var stored=new System.Web.Script.Serialization.JavaScriptSerializer().DeserializeObject(File.ReadAllText(path)) as System.Collections.Generic.Dictionary<string,object>;
+  Require(stored.Count==3&&stored.ContainsKey("lightingSchedule")&&!prefs.LightingSchedule.enabled,"Only local preferences and a disabled schedule are stored");
   prefs.SetKeyboardScale(140);var restored=new UserPreferences(path);Require(restored.KeyboardScale==140&&restored.Language=="en","Size survives restart without changing language");
   prefs.SetLanguage("ko");Require(new UserPreferences(path).KeyboardScale==140,"Language preserves graphic size");
   before=File.ReadAllText(path);rejected=false;try{prefs.SetValues("en",135);}catch(ArgumentException){rejected=true;}
@@ -31,6 +32,15 @@ class Check {
   string blocked=Path.Combine(args[0],Guid.NewGuid().ToString("N"));Directory.CreateDirectory(blocked);var invalid=new UserPreferences(blocked);rejected=false;
   try{invalid.SetLanguage("en");}catch(IOException){rejected=true;}
   Require(rejected&&invalid.Language=="ko"&&!File.Exists(blocked+".tmp"),"Failed save keeps old state and removes temporary file");
+  prefs.SetLightingSchedule(new LightingScheduleSettings(true,"21:30","07:45",35,true,true,false));restored=new UserPreferences(path);
+  Require(restored.LightingSchedule.enabled&&restored.LightingSchedule.onTime=="21:30"&&restored.LightingSchedule.brightness==35,"Lighting schedule survives restart");
+  prefs.SetLanguage("en");prefs.SetKeyboardScale(160);Require(new UserPreferences(path).LightingSchedule.onTime=="21:30","Language and size preserve the lighting schedule");
+  File.WriteAllText(path,"{\"language\":\"en\",\"keyboardScale\":140,\"lightingSchedule\":{\"enabled\":true,\"onTime\":\"24:00\"}}");restored=new UserPreferences(path);
+  Require(!restored.LightingSchedule.enabled&&restored.Language=="en"&&restored.KeyboardScale==140,"Corrupt schedules default off without losing other preferences");
+  before=File.ReadAllText(path);rejected=false;try{prefs.SetLightingSchedule(new LightingScheduleSettings(true,"20:00","20:00",30,true,true,false));}catch(ArgumentException){rejected=true;}
+  Require(rejected&&File.ReadAllText(path)==before,"Invalid schedule edits do not modify the preference file");
+  rejected=false;try{invalid.SetLightingSchedule(new LightingScheduleSettings(true,"20:00","08:00",30,true,true,false));}catch(IOException){rejected=true;}
+  Require(rejected&&!invalid.LightingSchedule.enabled,"Failed schedule saves retain the previous disabled state");
   Console.WriteLine("{\"nativePreferenceChecks\":"+checks+",\"passed\":true}");
  }
 }

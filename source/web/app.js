@@ -34,7 +34,7 @@ async function work(fn,message){
  setBusy(true);$('#notice').hidden=true;state.error=null;
  try{await fn();if(message)toast(message);if(device.connected&&!live.busy&&!live.error&&$('#syncStatus').dataset.phase!=='error')liveState({phase:live.last?'saved':'idle'});}
  catch(error){showError(error);}
- finally{setBusy(false);updateConnection();if(isLanding())$('#startConnect').focus({preventScroll:true});}
+ finally{setBusy(false);updateConnection();if(isLanding())$('#startConnect').focus({preventScroll:true});window.HyzenLightSchedule?.tick();}
 }
 function updateConnection(){
  const on=device.connected;$('#statusDot').classList.toggle('online',on);
@@ -179,7 +179,13 @@ function advanced(){const type=state.advanced,desc={MT:'짧게 누를 때와 길
  else form=`<div class="advanced-form"><div class="field"><label for="partnerKey">함께 동작할 키</label><select id="partnerKey">${physical.filter(k=>!k.forbidEdit&&device.index(k.keyCode)>=0).map(k=>option(device.index(k.keyCode),k.name,device.index('20 00 16'))).join('')}</select></div><div class="field"><label for="advancedPriority">${type==='SOCD'?'우선순위':type==='HT'?'연결 방향':'입력 비교'}</label><select id="advancedPriority">${(type==='SOCD'?[[0,'나중에 누른 키 우선'],[1,'선택한 키 우선'],[2,'상대 키 우선'],[3,'중립 · 두 키 해제']]:type==='HT'?[[0,'양방향'],[1,'선택한 키 → 상대 키'],[2,'상대 키 → 선택한 키']]:[[0,'더 깊게 누른 키 우선']]).map(([v,l])=>option(v,l,0)).join('')}</select></div></div>${range('advancedMm','동작 시작 깊이',1,device.minMm,device.maxMm,.01,'mm')}${toggle('advancedRt','빠른 입력 사용','연결된 두 키에 빠른 반응을 적용합니다.',false)}`;
  return keyboard()+`<article class="card"><div class="section-heading"><h2>고급 키</h2><button data-action="clearAdvanced">일반 키로 복원</button></div><div class="pill-tabs">${Object.keys(desc).map(t=>`<button data-advanced="${t}" class="${type===t?'active':''}">${t}</button>`).join('')}</div><p class="advanced-description">${desc[type]}</p>${form}${actionRow('saveAdvanced','선택한 키에 저장','고급 키는 기본 레이어에서 동작합니다. 게임 규정에 맞게 설정하세요.')}</article>`;}
 const effectNames={constantlyOn:'고정',breathe:'숨쉬기',singleLiang:'누른 키',singleOff:'꺼지는 키',heartbeat:'심장 박동',ripple:'물결',alternate:'교차',raindrop:'빗방울',conversion:'색 전환',piano:'피아노',wave:'웨이브',spin:'회전',meteor:'유성',OpenClose:'열림과 닫힘',storeLibra:'쌓기'};
-function lights(){return keyboard(false)+lightingControls();}
+function lightingScheduleControls(){
+ const value=window.HyzenLightSchedule?.config||HyzenSchedule.defaults;
+ const times=`<div class="schedule-times"><div class="field"><label for="scheduleOn">켜지는 시간</label><input id="scheduleOn" type="time" value="${value.onTime}" required></div><div class="field"><label for="scheduleOff">꺼지는 시간</label><input id="scheduleOff" type="time" value="${value.offTime}" required></div></div>`;
+ const targets=`<div class="setting-row"><span>적용 대상</span><div class="schedule-targets">${[['scheduleBack','back','키보드'],['scheduleFront','front','라이트 바'],['scheduleReceiver','receiver','수신기']].map(([id,key,label])=>`<label for="${id}"><input id="${id}" type="checkbox" ${value[key]?'checked':''}>${label}</label>`).join('')}</div></div>`;
+ return `<details id="lightingSchedule" class="card option-card"><summary><span>시간 예약</span><span class="summary-value">${value.enabled?value.onTime+' → '+value.offTime:'꺼짐'}</span></summary><div class="fold-body">${toggle('scheduleEnabled','시간 예약 사용','',value.enabled)}${times}${range('scheduleBrightness','밤 밝기',value.brightness,1,100,1,'%')}${targets}<p class="small muted schedule-hint">PC 시간 기준 · HUB가 실행 중이고 키보드가 연결돼 있을 때 적용됩니다. 최소화해도 동작합니다.</p></div></details>`;
+}
+function lights(){return keyboard(false)+lightingControls()+lightingScheduleControls();}
 function lightingControls(){
  const group=state.lightGroup,list=group==='back'?C.mainBackLight:group==='front'?C.prepositionLight:C.dongleLight,v=state.lightDraft||device.light(group);state.lightDraft=v;
  const effect=list.find(e=>parseInt(e.command,16)===v.mode)||list[0],name=effectNames[effect.tooltip]||effect.tooltip;
@@ -204,7 +210,7 @@ function settings(){
  const language=`<div class="setting-row"><div class="setting-label" id="languageLabel">언어</div><div class="language-toggle" role="group" aria-labelledby="languageLabel">${['ko','en'].map(code=>`<button data-language="${code}" aria-pressed="${L.language===code}">${code.toUpperCase()}</button>`).join('')}</div></div><div class="setting-row"><label for="keyboardScale">키보드 그래픽 크기</label><select id="keyboardScale">${graphicScaleOptions()}</select></div>`;
  return `<article class="card">${language}<div class="setting-row"><label for="axisMode">스위치 모드</label><select id="axisMode">${option(2,'MAG',f[56])}${option(1,'MEC',f[56])}</select></div>${fold('키 잠금 · 고속 응답',locks)}${actionRow('saveMode')}</article>${[['절전',sleep],['폴링레이트',rate],['프로필 · 연결',profile],[cap.firmware?'업데이트 · 초기화':'초기화',firmware]].map(([title,body])=>`<details class="card option-card"><summary>${title}</summary><div class="fold-body">${body}</div></details>`).join('')}`;
 }
-function help(){return `<article class="card help-card"><h2>Lofree HUB 1.3.5</h2><p>Lofree Hyzen 67용 Windows 제어 프로그램입니다. USB 또는 2.4GHz로 연결해 키 매핑, 입력 깊이, 조명 등을 설정합니다.</p></article>${[['연결과 프로필','USB 유선 또는 2.4GHz 수신기로 연결합니다. Bluetooth에서는 설정용 HID 인터페이스가 제공되지 않습니다. 상단에서 7개 프로필을 전환할 수 있고, 키 매핑과 조명 등은 현재 프로필에 저장합니다.'],['저장과 설정 확인','변경한 값은 자동으로 키보드에 적용합니다. 연속 조작은 짧게 묶어 전송하고, 같은 값을 다시 읽어 확인합니다. 하단에서 적용 상태를 확인하세요. 실패하면 ‘다시 적용’을 누르거나 새로고침으로 장치 값을 다시 읽을 수 있습니다.'],['키 매핑과 Fn 레이어','키를 선택한 뒤 새 동작을 지정합니다. Ctrl을 누르며 선택하면 여러 키를 편집할 수 있습니다. Fn과 고정 키는 변경할 수 없습니다. 네 가지 Fn 레이어는 프로필 전체에서 공유됩니다.'],['입력 깊이와 고급 키','MAG 모드에서는 장치의 보정 값으로 mm와 원시 값을 변환합니다. RT는 누름·해제 이동 거리를 따로 조절하고, MT·TGL·DKS·RS·SOCD·HT를 설정할 수 있습니다. 두 키 기능은 서로 다른 키를 연결해야 합니다.'],['키 테스트와 매크로','입력 기록은 이 프로그램 창이 활성 상태일 때만 메모리에 보관합니다. 창을 벗어나면 녹화를 중지합니다. Fn이나 Windows가 가로채는 단축키는 일반 입력 이벤트에 나타나지 않을 수 있습니다. 매크로는 녹화를 중지하면 자동 적용합니다. 키 매핑에서 M1~M28을 지정하세요.'],['보정 · 펌웨어 · 초기화','이 버전의 보정, 펌웨어 쓰기, 공장 초기화는 공식 드라이버로 연결합니다. 프로그램에서 공식 도구를 열면 HID 연결을 먼저 해제합니다. 보정은 유선 MAG 모드에서 진행하세요.'],['백업 범위','내보내기는 현재 프로필의 기본 레이어 매핑과 기능 설정을 포함합니다. Fn 레이어·고급 키·입력 깊이·매크로 데이터는 이 백업 형식에 포함되지 않습니다. 원본 JSON 파일을 별도로 보관하세요.']].map(([t,p])=>`<details class="card help-card"><summary>${t}</summary><p>${p}</p></details>`).join('')}<button data-action="official">Lofree 공식 Hyzen 드라이버 ↗</button>`;}
+function help(){return `<article class="card help-card"><h2>Lofree HUB 1.4.0</h2><p>Lofree Hyzen 67용 Windows 제어 프로그램입니다. USB 또는 2.4GHz로 연결해 키 매핑, 입력 깊이, 조명 등을 설정합니다.</p></article>${[['연결과 프로필','USB 유선 또는 2.4GHz 수신기로 연결합니다. Bluetooth에서는 설정용 HID 인터페이스가 제공되지 않습니다. 상단에서 7개 프로필을 전환할 수 있고, 키 매핑과 조명 등은 현재 프로필에 저장합니다.'],['저장과 설정 확인','변경한 값은 자동으로 키보드에 적용합니다. 연속 조작은 짧게 묶어 전송하고, 같은 값을 다시 읽어 확인합니다. 하단에서 적용 상태를 확인하세요. 실패하면 ‘다시 적용’을 누르거나 새로고침으로 장치 값을 다시 읽을 수 있습니다.'],['키 매핑과 Fn 레이어','키를 선택한 뒤 새 동작을 지정합니다. Ctrl을 누르며 선택하면 여러 키를 편집할 수 있습니다. Fn과 고정 키는 변경할 수 없습니다. 네 가지 Fn 레이어는 프로필 전체에서 공유됩니다.'],['입력 깊이와 고급 키','MAG 모드에서는 장치의 보정 값으로 mm와 원시 값을 변환합니다. RT는 누름·해제 이동 거리를 따로 조절하고, MT·TGL·DKS·RS·SOCD·HT를 설정할 수 있습니다. 두 키 기능은 서로 다른 키를 연결해야 합니다.'],['키 테스트와 매크로','입력 기록은 이 프로그램 창이 활성 상태일 때만 메모리에 보관합니다. 창을 벗어나면 녹화를 중지합니다. Fn이나 Windows가 가로채는 단축키는 일반 입력 이벤트에 나타나지 않을 수 있습니다. 매크로는 녹화를 중지하면 자동 적용합니다. 키 매핑에서 M1~M28을 지정하세요.'],['보정 · 펌웨어 · 초기화','이 버전의 보정, 펌웨어 쓰기, 공장 초기화는 공식 드라이버로 연결합니다. 프로그램에서 공식 도구를 열면 HID 연결을 먼저 해제합니다. 보정은 유선 MAG 모드에서 진행하세요.'],['백업 범위','내보내기는 현재 프로필의 기본 레이어 매핑과 기능 설정을 포함합니다. Fn 레이어·고급 키·입력 깊이·매크로 데이터는 이 백업 형식에 포함되지 않습니다. 원본 JSON 파일을 별도로 보관하세요.']].map(([t,p])=>`<details class="card help-card"><summary>${t}</summary><p>${p}</p></details>`).join('')}<button data-action="official">Lofree 공식 Hyzen 드라이버 ↗</button>`;}
 async function loadAdvanced(prefetched=undefined){if(state.page!=='advanced'||firstSelected()<0)return;const v=prefetched===undefined?await device.advancedConfig(firstSelected()):prefetched;if(v){state.advanced=v.kind;render();if(v.tap)$('#advancedTap').value=P.hex(v.tap);if(v.hold)$('#advancedHold').value=P.hex(v.hold);if(v.delay!==undefined)$('#advancedDelay').value=v.delay;if(v.partner!==undefined)$('#partnerKey').value=v.partner;if(v.priority!==undefined)$('#advancedPriority').value=v.priority;if(v.mm!==undefined){$('#advancedMm').value=v.mm;syncInstrument($('#advancedMm'),true);}if(v.rtEnabled!==undefined)$('#advancedRt').checked=v.rtEnabled;if(v.rows)for(let n=0;n<4;n++){$('#dksKey'+n).value=P.hex(v.rows[n].code);$('#dksPoint'+n).value=v.points[n].toFixed(2);}}}
 async function navigate(page){
  if(!device.connected||!availablePage(page))return;
@@ -343,7 +349,11 @@ $('#nav').innerHTML=nav.map(([id,title])=>`<button data-page="${id}" class="${id
 async function prepareClose(){
  for(let attempt=0;state.busy&&attempt<650;attempt++)await new Promise(resolve=>setTimeout(resolve,100));
  if(state.busy){toast('진행 중인 작업이 끝난 뒤 닫아주세요.');return false;}
- try{if(state.recording)stopRecording();await live.flush();return true;}catch(error){showError(error);return false;}
+ try{
+  if(state.recording)stopRecording();
+  try{await live.flush();}catch(error){if(!window.HyzenLightSchedule?.discardFailedApply())throw error;await live.flush();}
+  return true;
+ }catch(error){showError(error);return false;}
 }
 window.hyzenApp={device,state,navigate,render,renderBattery,rpc,prepareClose,switchLanguage,refreshLocale,setGraphicScale};
 window.runVerification=async()=>{
@@ -402,6 +412,7 @@ window.runVerification=async()=>{
  await (await import('./model-verification.js')).verifyViewContinuity({checks,modelReady});
  checks.push({name:'page-transition-finishes-cleanly',ok:HyzenPageMotion.status.phase==='idle'&&!$('#content').inert&&getComputedStyle($('#content')).opacity==='1'&&$('#content').getAnimations().length===0&&$('#nav [data-page="light"]').getAttribute('aria-current')==='page'});
  await (await import('./model-verification.js')).verifyScale({checks,modelReady,wait,settled});
+ await (await import('./schedule-verification.js')).verifyLightingSchedule({checks,settled,modelReady});
  const pageTransitions=[],photoViews=[],dotCoverage=[];
  const banned=/손끝에 맞춰|YOUR EVERYDAY|KEYBOARD CONTROL|Designed around|MAKE EVERY|PRECISION IN|LESS REPETITION|YOUR OWN MOOD|손에 익은 배치|책상에 어울리는|손끝에 맞춘|손에 맞게/;
  for(const page of nav.map(n=>n[0]).filter(availablePage)){

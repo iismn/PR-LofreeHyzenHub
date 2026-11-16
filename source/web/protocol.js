@@ -68,6 +68,11 @@ class Hyzen {
  async sleep(enabled,first,second){if(!Number.isInteger(first)||!Number.isInteger(second)||first<1||second<1||first>1092||second>1092)throw Error('절전 시간은 1~1092분입니다.');const a=le(first*60),b=le(second*60);await this.patchFunction({33:enabled?1:0,34:a[0],35:a[1],36:b[0],37:b[1]},true);}
  light(group){const g=lightGroups[group],a=this.func;return {mode:a[g.mode],speed:4-a[g.speed],direction:a[g.direction],brightness:Math.floor(a[g.brightness]/g.scale*100),color:'#'+a.slice(g.rgb,g.rgb+3).map(x=>x.toString(16).padStart(2,'0')).join(''),custom:a[g.colorMode]===1};}
  async setLight(group,values){const g=lightGroups[group];if(!g||!/^#[0-9a-f]{6}$/i.test(values.color)||values.brightness<0||values.brightness>100||values.speed<0||values.speed>4)throw Error('조명 값이 올바르지 않습니다.');const rgb=values.color.slice(1).match(/../g).map(x=>parseInt(x,16));const patch={[g.mode]:values.mode,[g.speed]:4-values.speed,[g.direction]:values.direction||0,[g.brightness]:Math.ceil(values.brightness*g.scale/100),[g.colorMode]:values.custom?1:0};rgb.forEach((v,i)=>patch[g.rgb+i]=v);await this.patchFunction(patch);}
+ async scheduledBrightness(groups,percent){
+  if(!Array.isArray(groups)||groups.some(group=>!lightGroups[group])||!Number.isInteger(percent)||percent<0||percent>100)throw Error('조명 값이 올바르지 않습니다.');
+  const patch={};for(const name of groups){if(name==='receiver'&&this.info.productId!==37)continue;const group=lightGroups[name],value=Math.ceil(percent*group.scale/100);if(this.func[group.brightness]!==value)patch[group.brightness]=value;}
+  if(Object.keys(patch).length)await this.patchFunction(patch);
+ }
  diff(i){const n=u16(this.cache.actuation.diffs,i*2)&0x3fff;if(!n)throw Error('선택한 키의 보정 값이 없습니다. 공식 드라이버에서 유선 보정을 먼저 진행하세요.');return n;}
  raw(mm,i,linear=false){return mmToRaw(mm,this.diff(i),this.maxMm,this.curve,linear);}
  mm(raw,i,linear=false){return Math.min(this.maxMm,Math.max(0,rawToMm(raw,this.diff(i),this.maxMm,this.curve,linear)));}

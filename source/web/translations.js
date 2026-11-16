@@ -1,6 +1,9 @@
 (function(root){
 'use strict';
 const messages={
+ '시간 예약':'Lighting schedule','시간 예약 사용':'Enable lighting schedule','켜지는 시간':'Turn on at','꺼지는 시간':'Turn off at','밤 밝기':'Night brightness','적용 대상':'Apply to',
+ 'PC 시간 기준 · HUB가 실행 중이고 키보드가 연결돼 있을 때 적용됩니다. 최소화해도 동작합니다.':'Uses the PC clock. Applies while HUB is running and the keyboard is connected, including when minimized.',
+ '조명 예약 설정이 올바르지 않습니다.':'Choose different on/off times, a night brightness from 1 to 100, and at least one light.','유효한 시간이 필요합니다.':'A valid time is required.',
  '드래그하여 회전 · 휠로 확대/축소 · 두 번 클릭하여 초기화':'Drag to rotate · Scroll to zoom · Double-click to reset',
  '키보드 그래픽 크기':'Keyboard graphic size','보기 크기가 올바르지 않습니다.':'Choose a valid view size.','앱 설정을 저장하지 못했습니다.':'Could not save app preferences.',
  '3D 보기 초기화':'Reset 3D view','드래그하여 회전 · 두 번 클릭하여 초기화':'Drag to rotate · Double-click to reset',

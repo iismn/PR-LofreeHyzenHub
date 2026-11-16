@@ -69,6 +69,10 @@ async function applyLiveJob(job){
    else if(field==='color')v.color.slice(1).match(/../g).forEach((value,i)=>patch[group.rgb+i]=parseInt(value,16));
   }
   if(Object.keys(patch).length)await device.patchFunction(patch);
+ }else if(job.kind==='lightingSchedule'){
+  if(!window.HyzenLightSchedule?.accepts(job))return;
+  try{await device.scheduledBrightness(job.groups,job.percent);window.HyzenLightSchedule.refreshPreview(job.groups);}
+  catch(error){error.lightingSchedule=true;error.retryAfter=Date.now()+60000;throw error;}
  }else if(job.kind==='mode'){
   const keys={axisMode:56,winLock:22,altTabLock:60,altF4Lock:61,lightspeed:62},patch={};for(const field of job.fields)patch[keys[field]]=field==='axisMode'?job.values[field]:field==='lightspeed'?(job.values[field]?0x66:0):(job.values[field]?1:0);
   await device.patchFunction(patch);if(job.fields.includes('axisMode'))delete device.cache.actuation;updateNavigationVisibility();

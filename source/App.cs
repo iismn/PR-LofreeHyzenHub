@@ -18,8 +18,8 @@ using Microsoft.Web.WebView2.Wpf;
 [assembly:AssemblyTitle("Lofree HUB")]
 [assembly:AssemblyProduct("Lofree HUB")]
 [assembly:AssemblyDescription("Lofree HYZEN 67 keyboard settings")]
-[assembly:AssemblyVersion("1.3.5.0")]
-[assembly:AssemblyFileVersion("1.3.5.0")]
+[assembly:AssemblyVersion("1.4.0.0")]
+[assembly:AssemblyFileVersion("1.4.0.0")]
 namespace HyzenControl {
  static class Program {
   internal const string AppUserModelId="Lofree.HUB";
@@ -61,6 +61,8 @@ namespace HyzenControl {
   readonly WebView2 web=new WebView2();
   readonly JavaScriptSerializer json=new JavaScriptSerializer { MaxJsonLength=2097152 };
   readonly System.Threading.SemaphoreSlim operations=new System.Threading.SemaphoreSlim(1,1);
+  readonly System.Windows.Threading.DispatcherTimer scheduleTimer=new System.Windows.Threading.DispatcherTimer{Interval=TimeSpan.FromSeconds(15)};
+  bool schedulePulsePending;
   HidDevice device; bool closing,closePending,closeReady;
   static readonly HashSet<int> ReadCommands=new HashSet<int>(new[]{3,5,7,8,0x14,0x1b,0x25,0x26,0x28,0x29,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5a,0x5b,0x5c,0x5d,0x5e,0x5f,0x60,0x61,0x67});
   static readonly HashSet<int> WriteCommands=new HashSet<int>(new[]{6,9,0x15,0x1c,0x27,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e,0x4f,0x63,0x66});
@@ -78,7 +80,16 @@ namespace HyzenControl {
     try{await web.CoreWebView2.ExecuteScriptAsync("Promise.resolve(window.hyzenApp?.prepareClose?window.hyzenApp.prepareClose():true).then(ready=>chrome.webview.postMessage({id:0,action:'closeReady',ready})).catch(()=>chrome.webview.postMessage({id:0,action:'closeReady',ready:false}))");}
     catch{closeReady=true;Close();}
    };
-   Closed+=delegate{closing=true;if(device!=null)device.Dispose();web.Dispose();};
+   scheduleTimer.Tick+=delegate{PulseSchedule();};
+   Microsoft.Win32.SystemEvents.PowerModeChanged+=PowerModeChanged;
+   Closed+=delegate{closing=true;scheduleTimer.Stop();Microsoft.Win32.SystemEvents.PowerModeChanged-=PowerModeChanged;if(device!=null)device.Dispose();web.Dispose();};
+  }
+  void PowerModeChanged(object sender,Microsoft.Win32.PowerModeChangedEventArgs e){if(e.Mode==Microsoft.Win32.PowerModes.Resume&&!closing)Dispatcher.BeginInvoke(new Action(PulseSchedule));}
+  async void PulseSchedule(){await PulseScheduleAsync();}
+  async Task<bool> PulseScheduleAsync(){
+   if(closing||schedulePulsePending||web.CoreWebView2==null)return false;
+   schedulePulsePending=true;
+   try{await web.CoreWebView2.ExecuteScriptAsync("window.HyzenLightSchedule?.tick()");return true;}catch{return false;}finally{schedulePulsePending=false;}
   }
   async Task Start() {
    try {
@@ -107,8 +118,9 @@ namespace HyzenControl {
       await core.ExecuteScriptAsync("window.runVerification().then(result=>chrome.webview.postMessage({id:-1,action:'verification',result})).catch(error=>chrome.webview.postMessage({id:-1,action:'verification',result:{error:String(error)}}))");
      } catch(Exception e){File.WriteAllText(Path.Combine(Program.VerifyDirectory,"error.txt"),e.ToString());}
     };
-    await core.AddScriptToExecuteOnDocumentCreatedAsync("window.HUB_PREFERENCES="+json.Serialize(new{language=Program.Preferences.Language,keyboardScale=Program.Preferences.KeyboardScale})+";");
+    await core.AddScriptToExecuteOnDocumentCreatedAsync("window.HUB_PREFERENCES="+json.Serialize(new{language=Program.Preferences.Language,keyboardScale=Program.Preferences.KeyboardScale,lightingSchedule=Program.Preferences.LightingSchedule})+";");
     core.Navigate(Origin+"/index.html");
+    scheduleTimer.Start();
    }catch(Exception e){MessageBox.Show(this,Program.Text("화면을 열지 못했습니다. Microsoft Edge WebView2 Runtime이 필요합니다.\n","Could not open the interface. Microsoft Edge WebView2 Runtime is required.\n")+e.Message,"Lofree HUB");Close();}
   }
   async void Message(object sender,CoreWebView2WebMessageReceivedEventArgs e) {
@@ -117,12 +129,13 @@ namespace HyzenControl {
    try {
     var m=json.Deserialize<Dictionary<string,object>>(e.WebMessageAsJson);id=Convert.ToInt32(m["id"]);string action=Convert.ToString(m["action"]);
     if(action=="preferences"){
-     if(m.ContainsKey("language")||m.ContainsKey("keyboardScale")){
+     if(m.ContainsKey("language")||m.ContainsKey("keyboardScale")||m.ContainsKey("lightingSchedule")){
       double scale=m.ContainsKey("keyboardScale")?Convert.ToDouble(m["keyboardScale"]):Program.Preferences.KeyboardScale;
       if(double.IsNaN(scale)||double.IsInfinity(scale)||scale!=Math.Truncate(scale)||scale<80||scale>160)throw new ArgumentException("보기 크기가 올바르지 않습니다.");
-      Program.Preferences.SetValues(m.ContainsKey("language")?Convert.ToString(m["language"]):Program.Preferences.Language,(int)scale);
+      var schedule=m.ContainsKey("lightingSchedule")?LightingScheduleSettings.Parse(m["lightingSchedule"]):Program.Preferences.LightingSchedule;
+      Program.Preferences.SetValues(m.ContainsKey("language")?Convert.ToString(m["language"]):Program.Preferences.Language,(int)scale,schedule);
      }
-     web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{language=Program.Preferences.Language,keyboardScale=Program.Preferences.KeyboardScale}}));return;
+     web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{language=Program.Preferences.Language,keyboardScale=Program.Preferences.KeyboardScale,lightingSchedule=Program.Preferences.LightingSchedule}}));return;
     }
     if(action=="closeReady"){closePending=false;if(Convert.ToBoolean(m["ready"])){closeReady=true;Close();}return;}
     if(action=="verification"&&Program.VerifyDirectory!=null) {
@@ -133,6 +146,15 @@ namespace HyzenControl {
     if(action=="windowMetrics"&&Program.VerifyDirectory!=null) {
      var origin=web.TranslatePoint(new Point(0,0),this);
      web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{left=origin.X,top=origin.Y,width=web.ActualWidth,height=web.ActualHeight,windowWidth=ActualWidth,windowHeight=ActualHeight,margin=web.Margin.Left,verifyLive=Program.VerifyLive,verifyWrites=Program.VerifyWrites}}));return;
+    }
+    if(action=="verifyScheduleBackground"&&Program.VerifyDirectory!=null){
+     var previous=WindowState;int before=Convert.ToInt32(await web.CoreWebView2.ExecuteScriptAsync("window.HyzenLightSchedule.pulseCount"));bool minimized=false;
+     try{
+      WindowState=WindowState.Minimized;await Task.Delay(120);minimized=WindowState==WindowState.Minimized;
+      await PulseScheduleAsync();int after=Convert.ToInt32(await web.CoreWebView2.ExecuteScriptAsync("window.HyzenLightSchedule.pulseCount"));
+      web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{minimized=minimized,before=before,after=after}}));
+     }finally{WindowState=previous;}
+     return;
     }
     if(action=="capture"&&Program.VerifyDirectory!=null) {
      string name=Convert.ToString(m["name"]);

@@ -21,6 +21,8 @@ node --test .\tests\*.test.cjs
 | `source/App.cs` | WPF 창, WebView2, 메시지 검증, 종료 전 적용 처리, 앱 ID·아이콘 |
 | `source/HidDevice.cs` | Windows HID 열거, 보고서 전송과 온라인·배터리 상태 조회 |
 | `source/UserPreferences.cs` | UI 언어의 저장·초기 로드·오류 복구 |
+| `source/web/lighting-schedule.js` | 현지 시간의 야간 구간·프로필별 중복 방지·오래된 예약 거부 |
+| `source/web/lighting-schedule-ui.js` | 예약 입력, 로컬 저장, 밝기 큐 연결과 실패 재시도 |
 | `source/web/translations.js` | KO 원문과 EN 번역·동적 문구 패턴 |
 | `source/web/i18n.js` | 문구·접근성 속성 번역과 로캘 선택 |
 | `source/web/protocol.js` | 프로필·매핑·조명·입력 깊이·매크로와 재읽기 확인 |
@@ -50,6 +52,8 @@ node --test .\tests\*.test.cjs
 일반 쓰기는 장치 응답 후 같은 주소를 다시 읽어 비교합니다. 폴링레이트는 재연결한 뒤 확인합니다. 읽기 확인을 마친 입력 깊이 캐시는 해당 바이트만 갱신합니다.
 
 ## UI 검사
+
+조명 예약 설정은 언어·크기와 함께 보존합니다. WPF `DispatcherTimer`와 `SystemEvents.PowerModeChanged`가 예약 확인을 요청합니다. 화면 최소화는 예약을 멈추지 않으며, 연결 전이나 녹화·설정 전송 중에는 적용을 미룹니다. 순수 검사에서 날짜 경계, 재연결, 시간 변경, 실패 재시도와 밝기 바이트 범위를 검증하고 네이티브 검사에서는 최소화한 WebView2에서 실제 확인 호출이 실행되는지 검사합니다.
 
 언어 선택은 `%LOCALAPPDATA%\HyzenControl\preferences.json`에 저장하고, 시작할 때 WebView2 문서 생성 전에 읽어 화면에 전달합니다. 저장 실패 시 이전 선택을 유지합니다. 장치 프로필과 UI 언어는 별도로 관리하며, 언어 변경은 HID 요청을 발생시키지 않습니다.
 

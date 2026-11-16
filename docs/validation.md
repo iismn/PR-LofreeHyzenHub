@@ -1,5 +1,13 @@
 # Validation
 
+## 1.4.0 scheduled night lighting
+
+- **66 Node tests**, **19 native preference checks**, and **106/106 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.4.0-windows.json) / [minimum](validation/v1.4.0-windows-min.json).
+- Pure tests cover exact on/off boundaries, overnight and same-day intervals, local date changes, reconnect/profile changes, duplicate suppression, manual overrides, stale jobs, failed application and closing without losing pending manual edits. In-memory protocol checks changed only the selected profile's brightness bytes and preserved all other bytes.
+- Native preference checks cover restart persistence, old files, invalid settings, atomic failure behavior and preservation across language/size changes.
+- Native UI checks saved schedule values, recorded night-on/day-off jobs using the read-only executor, updated the 3D lighting and brightness control, and preserved colors/effects. The host timer executed its JavaScript check while the native window was minimized.
+- All native verification runs recorded zero physical setting writes. Clock boundaries were simulated; actual overnight operation and a physical system suspend/resume cycle were not performed. The feature is disabled by default and requires HUB to remain running and connected.
+
 ## 1.3.5 live 3D continuity
 
 - **57 Node tests** and **101/101 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.3.5-windows.json) / [minimum](validation/v1.3.5-windows-min.json).

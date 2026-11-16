@@ -54,6 +54,12 @@ In MAG mode, set actuation depth, separate press/release Rapid Trigger distances
 
 ## Lighting
 
+Expand **Lighting → Lighting schedule** and enable it. Defaults are **20:00 on / 08:00 off / 50% night brightness**. Choose the keyboard, front bar and/or receiver. The selected lights use zero brightness during the day and the chosen brightness at night, preserving colors and effects.
+
+The schedule uses the PC's local clock. **HUB must remain running and connected; minimizing it is supported.** It catches up after sleep or reconnect. Closing HUB leaves the last light state in place. Enabling or editing the schedule applies the current time's state. Manual brightness edits remain until the next boundary or reconnect. The feature starts disabled.
+
+Keyboard auto sleep remains separate. If a sleeping keyboard does not respond, the schedule retries later. Sleep times can be changed in General.
+
 Choose the keyboard backlight, front light bar or receiver. Adjust effects, brightness, color and the supported detail options. Effect and detail sections start collapsed. Hover a block to light its tick marks and dot readout.
 
 The 3D keyboard previews backlight and front-strip color, brightness and effects. Zero brightness turns that glow off. Animation phase is local to the preview; key-reactive effects use input delivered to this app. Receiver lighting is independent of the keyboard model.
