@@ -1,5 +1,15 @@
 # Validation
 
+## 1.5.0 tray and lightweight front-bar scheduling
+
+- **67 Node tests**, **36 native lighting checks**, and **23 native preference checks** passed. Cases cover midnight/year boundaries, startup catch-up, manual overrides, disconnection, sleeping devices, HID ownership, stale profile/time/config jobs, failed verification, single-flight timers and cross-instance preference merging.
+- **107/107 read-only native HUB UI checks** passed at both 1320×900 and 1040×720. The actual close handler hid the window, the clock continued, 3D rendering paused, and restore succeeded. Reports: [default](validation/v1.5.0-windows.json) / [minimum](validation/v1.5.0-windows-min.json).
+- **13/13 native Lofree Light UI checks** passed: field alignment, KO/EN persistence, edited times/brightness, front-only targets, closing without exit, restoration, and no browser/WPF assemblies loaded. [Report](validation/v1.5.0-light-ui.json). Its settings UI was inspected at 150% Windows DPI.
+- Device writes are limited to the current profile's key-brightness byte 30 (zero) and front-bar brightness byte 31 (night level or zero); colors, effects, receiver settings, sleep and mappings are preserved. Tests exercise failed transfers and reject stale writes before sending.
+- The installed lighting app starts with `--background`, with no settings window, and its exact sign-in command was read back from HKCU Run. Existing KO language and 160% graphic scale were preserved. Duplicate launch exited, a tray-resident update exited gracefully, closing the installed HUB hid it to the tray, and explicit HUB exit left Light running. [Installation/lifecycle report](validation/v1.5.0-background.json).
+- Read-only before/after probes of the connected HYZEN67 found profile 0, key brightness **0** and front-bar brightness **50**; all 64 function bytes were unchanged because the requested night state was already set. [Hardware report](validation/v1.5.0-light-hardware.json).
+- Reboot, a full overnight run, and physical system sleep/resume were not performed. Registration and the exact `--background` launch path are checked separately during installation; time boundaries and catch-up are simulated.
+
 ## 1.4.0 scheduled night lighting
 
 - **66 Node tests**, **19 native preference checks**, and **106/106 native UI checks** at both 1320×900 and 1040×720 passed. Reports: [default](validation/v1.4.0-windows.json) / [minimum](validation/v1.4.0-windows-min.json).

@@ -26,7 +26,7 @@ const pose = Motion.home('landing');
 let goal = {...pose}, renderer, bloom, environment, studio, capPhoto, modelPromise, model, host,frontStrip,ground,stripTexture;
 let magnetic=false;
 const velocity={yaw:0,elevation:0};
-let frame=0, lastTime=0, activePointer, hovering, error, visible=true, measured={width:0,height:0};
+let frame=0, lastTime=0, activePointer, hovering, error, visible=true, background=false, measured={width:0,height:0};
 let pendingFrames=0, rendered=0, loads=0, contextLost=false;
 let lightTimer=0,lastHit=null,lastLighting;
 let graphicScale=window.HUB_PREFERENCES?.keyboardScale||120;
@@ -284,12 +284,12 @@ function restorePhotoPositions(){for(const button of buttons.values())button.sty
 function invalidate(count=1){
  clearTimeout(lightTimer);lightTimer=0;
  pendingFrames=Math.max(pendingFrames,count);
- if(!frame&&host&&(visible||travel)&&!document.hidden&&!error&&!contextLost)frame=requestAnimationFrame(tick);
+ if(!frame&&host&&(visible||travel)&&!document.hidden&&!background&&!error&&!contextLost)frame=requestAnimationFrame(tick);
 }
 
 function tick(now){
  frame=0;
- if(!host||!model||!renderer||!visible&&!travel||document.hidden||!measured.width||contextLost)return;
+ if(!host||!model||!renderer||!visible&&!travel||document.hidden||background||!measured.width||contextLost)return;
  const dt=Math.min(.05,(now-(lastTime||now-16))/1000);lastTime=now;
  const smoothing=reduced.matches?1:1-Math.exp(-dt*13);
  let moving=false,travelDone=false;
@@ -449,6 +449,7 @@ canvas.addEventListener('webglcontextrestored',()=>{
  try{refreshEnvironment();renderer.shadowMap.needsUpdate=true;if(host){delete host.dataset.modelState;invalidate(3);}}catch(reason){fail(reason);}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(travel&&travel.start!==null){Object.assign(pose,goal);finishTravel();}cancelAnimationFrame(frame);frame=0;}else invalidate(2);});
+window.addEventListener('hub-background',event=>{background=!!event.detail;if(background){if(travel){Object.assign(pose,goal);finishTravel();}cancelAnimationFrame(frame);clearTimeout(lightTimer);frame=0;lightTimer=0;}else invalidate(2);});
 window.addEventListener('blur',()=>{activePointer=null;host?.classList.remove('model-orbiting');hovering=null;invalidate();});
 const visibilityObserver=new IntersectionObserver(entries=>{const entry=entries.find(value=>value.target===host);if(!entry)return;visible=entry.isIntersecting;if(visible||travel)invalidate(2);else{cancelAnimationFrame(frame);frame=0;}});
 const originalRefresh=refresh;

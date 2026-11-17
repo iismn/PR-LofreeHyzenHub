@@ -6,11 +6,11 @@
 
 <br><br>
 
-<a href="https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.4.0/LofreeHUB.exe"><img src="docs/images/download-windows.svg" alt="Download Lofree HUB 1.4.0 for Windows" width="260" height="56"></a>
+<a href="https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.5.0/LofreeHUB.exe"><img src="docs/images/download-windows.svg" alt="Download Lofree HUB 1.5.0 for Windows" width="260" height="56"></a>
 
-**1.4.0 · Windows 10 / 11 · x64**
+**1.5.0 · Windows 10 / 11 · x64**
 
-[Release notes](https://github.com/iismn/PR-LofreeHyzenHub/releases/tag/v1.4.0) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Issues](https://github.com/iismn/PR-LofreeHyzenHub/issues)
+[Release notes](https://github.com/iismn/PR-LofreeHyzenHub/releases/tag/v1.5.0) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Issues](https://github.com/iismn/PR-LofreeHyzenHub/issues)
 
 [3D Keyboard](#3d-keyboard) · [Actuation](#actuation) · [Key Mapping](#key-mapping) · [Lighting](#lighting)
 
@@ -58,7 +58,15 @@ Select a key, then choose its action. Hold **Ctrl** to select multiple keys, or 
 
 ## Lighting
 
-Open **Lighting → Lighting schedule** to turn selected lights on at night and off during the day. Defaults are 20:00 on, 08:00 off and 50% night brightness; all are adjustable. The schedule uses the PC's local clock, works while HUB is connected and running (including minimized), and catches up after sleep or reconnect. Colors and effects are preserved. The feature starts disabled.
+Open **Lighting → Lighting schedule** to turn the **front light bar** on at night and off during the day, with **key lighting off**. Defaults are 20:00 on, 08:00 off and 50% night brightness; all are adjustable. Colors and effects are preserved. Closing HUB hides it to the tray and keeps its connected schedule running, with 3D rendering paused. Double-click the tray icon to restore it; choose **Exit Lofree HUB** to quit.
+
+### Lofree Light
+
+[Download the small lighting-only app](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.5.0/LofreeLight-1.5.0-Windows-x64.zip). Extract the ZIP and run **Install-Light.ps1**. It installs **LofreeLight.exe**, enables the front-bar schedule, and registers it to start quietly at Windows sign-in. The settings window closes to the tray. Double-click its icon for KO/EN settings, on/off times, night brightness, and **Start with Windows**.
+
+![Lofree Light settings](docs/images/lofree-light.png)
+
+Lofree Light uses native Windows Forms and HID: it loads no WebView2, 3D model or GPU renderer. It connects automatically over USB or 2.4 GHz, catches up after sleep/reconnection, and yields device access while HUB is connected. The two apps share schedule preferences. Only the front-bar and key-brightness bytes are changed; receiver settings, colors, effects, mappings and sleep settings remain intact. The main HUB does not need to be running.
 
 ![Backlight brightness, color and collapsed effect settings](docs/images/lighting.png)
 
@@ -93,15 +101,15 @@ Choose **KO** or **EN** in **General → Language**. Menus, key lists, help, sta
 
 Windows 10 or Windows 11, x64, .NET Framework 4.8, and Microsoft Edge WebView2 Runtime.
 
-1. [Download LofreeHUB.exe](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.4.0/LofreeHUB.exe) to a writable folder and run it.
+1. [Download LofreeHUB.exe](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.5.0/LofreeHUB.exe) to a writable folder and run it.
 2. Connect the keyboard by USB or its 2.4 GHz receiver, then click **연결**.
 3. Select a key or setting. Changes apply automatically; a separate save button is not required.
 
 If the app reports that WebView2 is missing, [install the WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/).
 
-For a stable Start menu shortcut, download the [Windows ZIP](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.4.0/LofreeHUB-1.4.0-Windows-x64.zip), extract it, and run `Install.ps1` with PowerShell. It installs to `%LOCALAPPDATA%\Programs\LofreeHUB` and registers **Lofree HUB** in Start. Right-click the app in Start to pin it.
+For a stable Start menu shortcut, download the [Windows ZIP](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.5.0/LofreeHUB-1.5.0-Windows-x64.zip), extract it, and run `Install.ps1` with PowerShell. It installs to `%LOCALAPPDATA%\Programs\LofreeHUB` and registers **Lofree HUB** in Start. Right-click the app in Start to pin it.
 
-Settings change on the keyboard. WebView2 data and the local language preference stay in `%LOCALAPPDATA%\HyzenControl`, preserving the earlier app's local data. Close the app before replacing its EXE. The initial language is KO; select EN in **일반 → 언어** to use English.
+Settings change on the keyboard. WebView2 data and local preferences stay in `%LOCALAPPDATA%\HyzenControl`, preserving the earlier app's data. Use **Exit Lofree HUB** in the tray before replacing its EXE; the installer requests a graceful exit during updates. The initial language is KO; select EN in **일반 → 언어** to use English. The main HUB itself is not registered for automatic startup; Lofree Light can handle lighting independently.
 
 </details>
 
@@ -123,6 +131,6 @@ Settings change on the keyboard. WebView2 data and the local language preference
 
 ---
 
-[Download 1.4.0](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.4.0/LofreeHUB.exe) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Build guide (Korean)](docs/technical-guide.md) · [Report an issue](https://github.com/iismn/PR-LofreeHyzenHub/issues)
+[Download 1.5.0](https://github.com/iismn/PR-LofreeHyzenHub/releases/download/v1.5.0/LofreeHUB.exe) · [KO guide](docs/user-guide.md) · [EN guide](docs/user-guide.en.md) · [Build guide (Korean)](docs/technical-guide.md) · [Report an issue](https://github.com/iismn/PR-LofreeHyzenHub/issues)
 
 [Asset sources](REFERENCE.md) · [Third-party notices](licenses) · [3D model](models/README.md) · [Preview source](docs/tools/README.md)

@@ -71,6 +71,7 @@ class Hyzen {
  async scheduledBrightness(groups,percent){
   if(!Array.isArray(groups)||groups.some(group=>!lightGroups[group])||!Number.isInteger(percent)||percent<0||percent>100)throw Error('조명 값이 올바르지 않습니다.');
   const patch={};for(const name of groups){if(name==='receiver'&&this.info.productId!==37)continue;const group=lightGroups[name],value=Math.ceil(percent*group.scale/100);if(this.func[group.brightness]!==value)patch[group.brightness]=value;}
+  if(groups.length===1&&groups[0]==='front'&&this.func[30]!==0)patch[30]=0;
   if(Object.keys(patch).length)await this.patchFunction(patch);
  }
  diff(i){const n=u16(this.cache.actuation.diffs,i*2)&0x3fff;if(!n)throw Error('선택한 키의 보정 값이 없습니다. 공식 드라이버에서 유선 보정을 먼저 진행하세요.');return n;}

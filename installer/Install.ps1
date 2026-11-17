@@ -1,7 +1,8 @@
 param(
  [string]$ExecutablePath=(Join-Path $PSScriptRoot 'LofreeHUB.exe'),
  [string]$InstallDirectory=(Join-Path $env:LOCALAPPDATA 'Programs\LofreeHUB'),
- [switch]$NoLaunch
+ [switch]$NoLaunch,
+ [switch]$EnableLightSchedule
 )
 $ErrorActionPreference='Stop'
 $sourceExe=[IO.Path]::GetFullPath($ExecutablePath)
@@ -9,7 +10,10 @@ if(-not(Test-Path -LiteralPath $sourceExe -PathType Leaf)){throw 'LofreeHUB.exe 
 $installRoot=[IO.Path]::GetFullPath($InstallDirectory)
 $installedExe=Join-Path $installRoot 'LofreeHUB.exe'
 foreach($runningApp in (Get-Process LofreeHUB -ErrorAction SilentlyContinue|Where-Object {$_.Path -eq $installedExe})){
- [void]$runningApp.CloseMainWindow()
+ if([version](Get-Item -LiteralPath $installedExe).VersionInfo.FileVersion -ge [version]'1.5.0.0'){
+  $signal=Start-Process -FilePath $installedExe -ArgumentList '--exit' -WindowStyle Hidden -PassThru
+  if(-not $signal.WaitForExit(10000)){throw 'Could not contact Lofree HUB'}
+ }else{[void]$runningApp.CloseMainWindow()}
  if(-not $runningApp.WaitForExit(15000)){throw 'Lofree HUB is still applying changes. Close it and run installation again.'}
 }
 New-Item -ItemType Directory -Path $installRoot -Force|Out-Null
@@ -65,4 +69,8 @@ public static class LofreeHubShortcutProperties {
 $actualId=[LofreeHubShortcutProperties]::SetAndReadAppId($shortcutPath,'Lofree.HUB')
 if($actualId -ne 'Lofree.HUB'){throw 'Shortcut application ID did not match'}
 [pscustomobject]@{Executable=$installedExe;Shortcut=$shortcutPath;AppUserModelId=$actualId}
+$lightInstaller=Join-Path $PSScriptRoot 'Install-Light.ps1'
+if((Test-Path -LiteralPath $lightInstaller) -and (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'LofreeLight.exe'))){
+ & $lightInstaller -InstallDirectory $installRoot -NoLaunch:$NoLaunch -PreserveSchedule:(!$EnableLightSchedule)
+}
 if(-not $NoLaunch){Start-Process -FilePath $installedExe -WindowStyle Hidden}

@@ -54,9 +54,13 @@ In MAG mode, set actuation depth, separate press/release Rapid Trigger distances
 
 ## Lighting
 
-Expand **Lighting → Lighting schedule** and enable it. Defaults are **20:00 on / 08:00 off / 50% night brightness**. Choose the keyboard, front bar and/or receiver. The selected lights use zero brightness during the day and the chosen brightness at night, preserving colors and effects.
+Expand **Lighting → Lighting schedule** and enable it. Defaults are **20:00 on / 08:00 off / 50% night brightness**. It turns the **front bar only** on at night, keeping **key lights off**. The bar is also off during the day. Colors and effects are preserved.
 
-The schedule uses the PC's local clock. **HUB must remain running and connected; minimizing it is supported.** It catches up after sleep or reconnect. Closing HUB leaves the last light state in place. Enabling or editing the schedule applies the current time's state. Manual brightness edits remain until the next boundary or reconnect. The feature starts disabled.
+The schedule uses the PC's local clock. **Closing the HUB window hides it to the tray and keeps the connected schedule running.** 3D rendering pauses while hidden. Double-click the tray icon to restore the window; use **Exit Lofree HUB** to fully quit. Enabling or editing the schedule applies the current period. Manual brightness changes remain until the next boundary or reconnect.
+
+For lighting alone, extract the **Lofree Light ZIP** and run **Install-Light.ps1**. It enables the front-bar schedule and registers **LofreeLight.exe** to start silently in the tray at Windows sign-in. It connects automatically over USB or 2.4 GHz; HUB and its Connect button are not required. Double-click the tray icon to change on/off times, night brightness, KO/EN and **Start with Windows**. Closing settings leaves it running; the tray's **Exit** command fully quits.
+
+The two apps share schedule preferences. Light yields HID access while HUB is connected. After PC sleep or keyboard reconnection, it applies the current period. Receiver lighting, colors, effects, key mappings and keyboard sleep settings are not changed.
 
 Keyboard auto sleep remains separate. If a sleeping keyboard does not respond, the schedule retries later. Sleep times can be changed in General.
 
@@ -92,7 +96,7 @@ Use **General → Profiles · Connection** to export or import a basic-profile J
 2. It installs to `%LOCALAPPDATA%\Programs\LofreeHUB` and registers **Lofree HUB** in Start.
 3. Right-click the app in Start and select **Pin to Start**.
 
-The script does not register automatic startup. Close the app before replacing its EXE or rerunning a newer installer. The shortcut and process keep the same `Lofree.HUB` ID.
+HUB itself is not registered for automatic startup. The included Lofree Light can run automatically on its own. Installers request graceful exits during updates. Use the tray's Exit command before manually replacing an EXE. The HUB shortcut and process keep the same `Lofree.HUB` ID.
 
 ## Local data and scope
 

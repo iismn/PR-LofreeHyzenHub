@@ -66,8 +66,8 @@ test('period application stays single-flight and retries a failed transfer',asyn
  c.apply=async job=>jobs.push(job);assert.equal(await c.tick(),true);
 });
 
-test('receiver scheduling is skipped on USB and brightness writes preserve colors, effects and other bytes',async()=>{
- const{controller:c,jobs,context}=fixture({receiver:true});context.productId=36;await c.tick();assert.deepEqual(jobs[0].groups,['back','front']);
+test('legacy targets now schedule only the front bar and general brightness writes preserve other bytes',async()=>{
+ const{controller:c,jobs,context}=fixture({back:true,receiver:true});context.productId=36;await c.tick();assert.deepEqual(jobs[0].groups,['front']);
  const memory=Array.from({length:448},(_,i)=>(i*7)%256),before=memory.slice(),writes=[];
  const d=new P.Hyzen(async(action,m)=>{if(action==='read')return memory.slice(m.offset,m.offset+m.length);if(action==='write'){writes.push(m);memory.splice(m.offset,m.data.length,...m.data);}},[]);
  d.info={productId:37};d.profile=2;d.func=memory.slice(128,192);
@@ -76,4 +76,14 @@ test('receiver scheduling is skipped on USB and brightness writes preserve color
  for(let i=0;i<memory.length;i++)if(![158,159,160].includes(i))assert.equal(memory[i],before[i]);
  writes.length=0;await d.scheduledBrightness(['back','front','receiver'],40);assert.equal(writes.length,0);
  await d.scheduledBrightness(['back','front','receiver'],0);assert.deepEqual(memory.slice(158,161),[0,0,0]);
+});
+
+test('front-only scheduling keeps key lights off and changes only the two brightness bytes',async()=>{
+ const{controller:c,jobs}=fixture();await c.tick();assert.deepEqual(jobs[0].groups,['front']);
+ const memory=Array.from({length:448},(_,i)=>(i*7)%256),before=memory.slice(),writes=[];
+ const d=new P.Hyzen(async(action,m)=>{if(action==='read')return memory.slice(m.offset,m.offset+m.length);if(action==='write'){writes.push(m);memory.splice(m.offset,m.data.length,...m.data);}},[]);
+ d.info={productId:37};d.profile=2;d.func=memory.slice(128,192);
+ await d.scheduledBrightness(['front'],50);assert.deepEqual(writes.map(m=>[m.offset,m.data[0]]),[[158,0],[159,50]]);
+ for(let i=0;i<memory.length;i++)if(![158,159].includes(i))assert.equal(memory[i],before[i]);
+ await d.scheduledBrightness(['front'],0);assert.deepEqual(memory.slice(158,160),[0,0]);
 });

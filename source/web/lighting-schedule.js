@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const defaults={enabled:false,onTime:'20:00',offTime:'08:00',brightness:50,back:true,front:true,receiver:false};
+const defaults={enabled:false,onTime:'20:00',offTime:'08:00',brightness:50,back:false,front:true,receiver:false};
 function validate(value){
  if(!value||['enabled','back','front','receiver'].some(key=>typeof value[key]!=='boolean')||!/^([01]\d|2[0-3]):[0-5]\d$/.test(value.onTime)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(value.offTime)||value.onTime===value.offTime||!Number.isInteger(value.brightness)||value.brightness<1||value.brightness>100||value.enabled&&!value.back&&!value.front&&!value.receiver)throw Error('조명 예약 설정이 올바르지 않습니다.');
  return Object.freeze(Object.fromEntries(Object.keys(defaults).map(key=>[key,value[key]])));
@@ -22,7 +22,7 @@ class Controller {
   const context=this.getContext();if(!context?.ready)return false;
   const signature=this.signature(),phase=phaseAt(this.config,this.clock()),previous=this.applied;
   if(previous?.connection===context.connection&&previous.profile===context.profile&&previous.signature===signature&&previous.period===phase.period)return false;
-  const groups=['back','front','receiver'].filter(group=>this.config[group]&&(group!=='receiver'||context.productId===37));
+  const groups=['front'];
   const job={kind:'lightingSchedule',key:'lightingSchedule:'+context.profile,connection:context.connection,productId:context.productId,profile:context.profile,signature,period:phase.period,percent:phase.percent,groups};
   this.running=true;
   try{await this.apply(job);if(this.accepts(job))this.applied={connection:context.connection,profile:context.profile,signature,period:phase.period};return true;}

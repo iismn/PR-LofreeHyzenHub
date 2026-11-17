@@ -18,8 +18,8 @@ using Microsoft.Web.WebView2.Wpf;
 [assembly:AssemblyTitle("Lofree HUB")]
 [assembly:AssemblyProduct("Lofree HUB")]
 [assembly:AssemblyDescription("Lofree HYZEN 67 keyboard settings")]
-[assembly:AssemblyVersion("1.4.0.0")]
-[assembly:AssemblyFileVersion("1.4.0.0")]
+[assembly:AssemblyVersion("1.5.0.0")]
+[assembly:AssemblyFileVersion("1.5.0.0")]
 namespace HyzenControl {
  static class Program {
   internal const string AppUserModelId="Lofree.HUB";
@@ -31,6 +31,7 @@ namespace HyzenControl {
   internal static bool VerifyLive;
   internal static int VerifyWrites;
   internal static UserPreferences Preferences;
+  internal static ProcessSignals Signals;
   internal static string Text(string ko,string en){return Preferences!=null&&Preferences.Language=="en"?en:ko;}
   [STAThread] static void Main(string[] args) {
    Marshal.ThrowExceptionForHR(SetCurrentProcessExplicitAppUserModelID(AppUserModelId));
@@ -43,7 +44,12 @@ namespace HyzenControl {
    if(args.Length==2&&(args[0]=="--verify"||args[0]=="--verify-min"||args[0]=="--verify-live")){VerifyDirectory=args[1];VerifySmall=args[0]=="--verify-min";VerifyLive=args[0]=="--verify-live";}
    string preferenceRoot=VerifyDirectory??DataPath;Directory.CreateDirectory(preferenceRoot);
    Preferences=new UserPreferences(Path.Combine(preferenceRoot,"preferences.json"));
-   try { Run(); } catch(Exception e) { File.WriteAllText(Path.Combine(DataPath,"startup-error.txt"),e.ToString());MessageBox.Show(e.Message,"Lofree HUB"); }
+   using(var signals=VerifyDirectory==null?new ProcessSignals("Lofree.HUB"):null){
+    Signals=signals;
+    if(signals!=null&&args.Contains("--exit")){signals.RequestExit();return;}
+    if(signals!=null&&!signals.First){signals.RequestShow();return;}
+    try { Run(); } catch(Exception e) { File.WriteAllText(Path.Combine(DataPath,"startup-error.txt"),e.ToString());MessageBox.Show(e.Message,"Lofree HUB"); }
+   }
   }
   [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
   static void Run(){new Application().Run(new MainWindow());}
@@ -63,7 +69,11 @@ namespace HyzenControl {
   readonly System.Threading.SemaphoreSlim operations=new System.Threading.SemaphoreSlim(1,1);
   readonly System.Windows.Threading.DispatcherTimer scheduleTimer=new System.Windows.Threading.DispatcherTimer{Interval=TimeSpan.FromSeconds(15)};
   bool schedulePulsePending;
-  HidDevice device; bool closing,closePending,closeReady;
+  readonly System.Windows.Threading.DispatcherTimer signalTimer=new System.Windows.Threading.DispatcherTimer{Interval=TimeSpan.FromMilliseconds(500)};
+  System.Windows.Forms.NotifyIcon tray;
+  System.Drawing.Icon trayIcon;
+  DeviceLease deviceLease;
+  HidDevice device; bool closing,closePending,closeReady,exitRequested,verifyTrayClose;
   static readonly HashSet<int> ReadCommands=new HashSet<int>(new[]{3,5,7,8,0x14,0x1b,0x25,0x26,0x28,0x29,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5a,0x5b,0x5c,0x5d,0x5e,0x5f,0x60,0x61,0x67});
   static readonly HashSet<int> WriteCommands=new HashSet<int>(new[]{6,9,0x15,0x1c,0x27,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e,0x4f,0x63,0x66});
   public MainWindow() {
@@ -75,21 +85,47 @@ namespace HyzenControl {
    web.Margin=new Thickness(0);web.DefaultBackgroundColor=System.Drawing.Color.FromArgb(255,23,33,51);Content=web;
    Loaded+=async delegate {await Start();};
    Closing+=async delegate(object sender,System.ComponentModel.CancelEventArgs e) {
-    if(closeReady||Program.VerifyDirectory!=null||web.CoreWebView2==null)return;
+    if(closeReady||Program.VerifyDirectory!=null&&!verifyTrayClose||web.CoreWebView2==null)return;
     e.Cancel=true;if(closePending)return;closePending=true;
     try{await web.CoreWebView2.ExecuteScriptAsync("Promise.resolve(window.hyzenApp?.prepareClose?window.hyzenApp.prepareClose():true).then(ready=>chrome.webview.postMessage({id:0,action:'closeReady',ready})).catch(()=>chrome.webview.postMessage({id:0,action:'closeReady',ready:false}))");}
-    catch{closeReady=true;Close();}
+    catch{if(exitRequested){closeReady=true;Close();}else{closePending=false;HideToTray();}}
    };
+   if(Program.VerifyDirectory==null){
+    using(var icon=Assembly.GetExecutingAssembly().GetManifestResourceStream("Hyzen.AppIcon.ico"))trayIcon=new System.Drawing.Icon(icon);
+    var menu=new System.Windows.Forms.ContextMenuStrip();
+    menu.Opening+=delegate{menu.Items[0].Text=Program.Text("Lofree HUB 열기","Open Lofree HUB");menu.Items[2].Text=Program.Text("Lofree HUB 종료","Exit Lofree HUB");};
+    menu.Items.Add("Lofree HUB",null,delegate{Dispatcher.BeginInvoke(new Action(RestoreFromTray));});menu.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+    menu.Items.Add("Exit",null,delegate{Dispatcher.BeginInvoke(new Action(RequestExit));});
+    tray=new System.Windows.Forms.NotifyIcon{Icon=trayIcon,Text="Lofree HUB",ContextMenuStrip=menu,Visible=true};
+    tray.DoubleClick+=delegate{Dispatcher.BeginInvoke(new Action(RestoreFromTray));};
+    signalTimer.Tick+=delegate{if(Program.Signals.TakeExit())RequestExit();else if(Program.Signals.TakeShow())RestoreFromTray();};signalTimer.Start();
+    Application.Current.SessionEnding+=delegate{exitRequested=true;closeReady=true;};
+   }
    scheduleTimer.Tick+=delegate{PulseSchedule();};
    Microsoft.Win32.SystemEvents.PowerModeChanged+=PowerModeChanged;
-   Closed+=delegate{closing=true;scheduleTimer.Stop();Microsoft.Win32.SystemEvents.PowerModeChanged-=PowerModeChanged;if(device!=null)device.Dispose();web.Dispose();};
+   Closed+=delegate{closing=true;scheduleTimer.Stop();signalTimer.Stop();Microsoft.Win32.SystemEvents.PowerModeChanged-=PowerModeChanged;if(device!=null)device.Dispose();if(deviceLease!=null)deviceLease.Dispose();if(tray!=null){tray.Visible=false;tray.ContextMenuStrip.Dispose();tray.Dispose();trayIcon.Dispose();}web.Dispose();};
+  }
+  void RequestExit(){exitRequested=true;Close();}
+  async void HideToTray(){
+   if(closing)return;
+   try{if(web.CoreWebView2!=null)await web.CoreWebView2.ExecuteScriptAsync("window.dispatchEvent(new CustomEvent('hub-background',{detail:true}))");}catch{}
+   ShowInTaskbar=false;Hide();
+  }
+  async void RestoreFromTray(){
+   if(closing)return;
+   ShowInTaskbar=true;Show();if(WindowState==WindowState.Minimized)WindowState=WindowState.Normal;Activate();
+   try{if(web.CoreWebView2!=null)await web.CoreWebView2.ExecuteScriptAsync("window.dispatchEvent(new CustomEvent('hub-background',{detail:false}))");}catch{}
+   PulseSchedule();
   }
   void PowerModeChanged(object sender,Microsoft.Win32.PowerModeChangedEventArgs e){if(e.Mode==Microsoft.Win32.PowerModes.Resume&&!closing)Dispatcher.BeginInvoke(new Action(PulseSchedule));}
   async void PulseSchedule(){await PulseScheduleAsync();}
   async Task<bool> PulseScheduleAsync(){
    if(closing||schedulePulsePending||web.CoreWebView2==null)return false;
    schedulePulsePending=true;
-   try{await web.CoreWebView2.ExecuteScriptAsync("window.HyzenLightSchedule?.tick()");return true;}catch{return false;}finally{schedulePulsePending=false;}
+   try{
+    Program.Preferences.Reload();
+    await web.CoreWebView2.ExecuteScriptAsync("window.HyzenLightSchedule?.updateNative("+json.Serialize(Program.Preferences.LightingSchedule)+");window.HyzenLightSchedule?.tick()");return true;
+   }catch{return false;}finally{schedulePulsePending=false;}
   }
   async Task Start() {
    try {
@@ -121,7 +157,7 @@ namespace HyzenControl {
     await core.AddScriptToExecuteOnDocumentCreatedAsync("window.HUB_PREFERENCES="+json.Serialize(new{language=Program.Preferences.Language,keyboardScale=Program.Preferences.KeyboardScale,lightingSchedule=Program.Preferences.LightingSchedule})+";");
     core.Navigate(Origin+"/index.html");
     scheduleTimer.Start();
-   }catch(Exception e){MessageBox.Show(this,Program.Text("화면을 열지 못했습니다. Microsoft Edge WebView2 Runtime이 필요합니다.\n","Could not open the interface. Microsoft Edge WebView2 Runtime is required.\n")+e.Message,"Lofree HUB");Close();}
+   }catch(Exception e){MessageBox.Show(this,Program.Text("화면을 열지 못했습니다. Microsoft Edge WebView2 Runtime이 필요합니다.\n","Could not open the interface. Microsoft Edge WebView2 Runtime is required.\n")+e.Message,"Lofree HUB");closeReady=true;Close();}
   }
   async void Message(object sender,CoreWebView2WebMessageReceivedEventArgs e) {
    if(e.Source!=Origin+"/index.html"||e.WebMessageAsJson.Length>1048576||closing)return;
@@ -129,15 +165,16 @@ namespace HyzenControl {
    try {
     var m=json.Deserialize<Dictionary<string,object>>(e.WebMessageAsJson);id=Convert.ToInt32(m["id"]);string action=Convert.ToString(m["action"]);
     if(action=="preferences"){
+     Program.Preferences.Reload();
      if(m.ContainsKey("language")||m.ContainsKey("keyboardScale")||m.ContainsKey("lightingSchedule")){
       double scale=m.ContainsKey("keyboardScale")?Convert.ToDouble(m["keyboardScale"]):Program.Preferences.KeyboardScale;
       if(double.IsNaN(scale)||double.IsInfinity(scale)||scale!=Math.Truncate(scale)||scale<80||scale>160)throw new ArgumentException("보기 크기가 올바르지 않습니다.");
       var schedule=m.ContainsKey("lightingSchedule")?LightingScheduleSettings.Parse(m["lightingSchedule"]):Program.Preferences.LightingSchedule;
-      Program.Preferences.SetValues(m.ContainsKey("language")?Convert.ToString(m["language"]):Program.Preferences.Language,(int)scale,schedule);
+      Program.Preferences.SetPartial(m.ContainsKey("language")?Convert.ToString(m["language"]):null,m.ContainsKey("keyboardScale")?(int?)scale:null,m.ContainsKey("lightingSchedule")?schedule:null);
      }
      web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{language=Program.Preferences.Language,keyboardScale=Program.Preferences.KeyboardScale,lightingSchedule=Program.Preferences.LightingSchedule}}));return;
     }
-    if(action=="closeReady"){closePending=false;if(Convert.ToBoolean(m["ready"])){closeReady=true;Close();}return;}
+    if(action=="closeReady"){closePending=false;if(Convert.ToBoolean(m["ready"])){if(exitRequested){closeReady=true;Close();}else HideToTray();}return;}
     if(action=="verification"&&Program.VerifyDirectory!=null) {
      File.WriteAllText(Path.Combine(Program.VerifyDirectory,"ui-result.json"),json.Serialize(m["result"]),Encoding.UTF8);
      using(var screenshot=File.Create(Path.Combine(Program.VerifyDirectory,"hyzen-control.png")))await web.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png,screenshot);
@@ -155,6 +192,17 @@ namespace HyzenControl {
       web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{minimized=minimized,before=before,after=after}}));
      }finally{WindowState=previous;}
      return;
+    }
+    if(action=="verifyTrayClose"&&Program.VerifyDirectory!=null){
+     bool hidden=false,pulsed=false,paused=false;verifyTrayClose=true;
+     try{
+      Close();for(int attempt=0;attempt<80&&IsVisible;attempt++)await Task.Delay(50);hidden=!IsVisible&&!closing;
+      int before=Convert.ToInt32(await web.CoreWebView2.ExecuteScriptAsync("window.HyzenLightSchedule.pulseCount"));
+      await PulseScheduleAsync();int after=Convert.ToInt32(await web.CoreWebView2.ExecuteScriptAsync("window.HyzenLightSchedule.pulseCount"));pulsed=after>before;
+      int rendered=Convert.ToInt32(await web.CoreWebView2.ExecuteScriptAsync("window.Hyzen3D.inspect().rendered"));await Task.Delay(180);
+      paused=rendered==Convert.ToInt32(await web.CoreWebView2.ExecuteScriptAsync("window.Hyzen3D.inspect().rendered"));
+     }finally{verifyTrayClose=false;RestoreFromTray();}
+     web.CoreWebView2.PostWebMessageAsJson(json.Serialize(new{id=id,result=new{hidden=hidden,pulsed=pulsed,renderingPaused=paused,restored=IsVisible}}));return;
     }
     if(action=="capture"&&Program.VerifyDirectory!=null) {
      string name=Convert.ToString(m["name"]);
@@ -178,11 +226,13 @@ namespace HyzenControl {
       value=await Task.Run(async delegate {
        if(action=="scan")return (object)HidDevice.Enumerate().Select(d=>new{d.name,d.connection,d.productId,d.vendorId}).ToArray();
        if(action=="connect") {
-        if(device!=null){device.Dispose();device=null;}
+        if(device!=null){device.Dispose();device=null;}if(deviceLease!=null){deviceLease.Dispose();deviceLease=null;}
         var devices=HidDevice.Enumerate();if(devices.Count==0)throw new IOException("Hyzen을 찾지 못했습니다. USB 케이블 또는 2.4GHz 수신기를 연결하세요.");
-        device=new HidDevice(devices[0]);return (object)new{device.Info.name,device.Info.connection,device.Info.productId};
+        for(int attempt=0;attempt<100&&deviceLease==null;attempt++){deviceLease=DeviceLease.TryAcquire(Program.DataPath);if(deviceLease==null)await Task.Delay(100);}
+        if(deviceLease==null)throw new IOException("조명 적용이 진행 중입니다. 잠시 후 다시 연결하세요.");
+        try{device=new HidDevice(devices[0]);return (object)new{device.Info.name,device.Info.connection,device.Info.productId};}catch{deviceLease.Dispose();deviceLease=null;throw;}
        }
-       if(action=="disconnect"){if(device!=null)device.Dispose();device=null;return (object)true;}
+       if(action=="disconnect"){if(device!=null)device.Dispose();device=null;if(deviceLease!=null){deviceLease.Dispose();deviceLease=null;}return (object)true;}
        if(device==null)throw new IOException("키보드를 먼저 연결하세요.");
        if(action=="battery") {
         if(device.Info.productId!=37)return null;

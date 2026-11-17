@@ -71,7 +71,7 @@ async function applyLiveJob(job){
   if(Object.keys(patch).length)await device.patchFunction(patch);
  }else if(job.kind==='lightingSchedule'){
   if(!window.HyzenLightSchedule?.accepts(job))return;
-  try{await device.scheduledBrightness(job.groups,job.percent);window.HyzenLightSchedule.refreshPreview(job.groups);}
+  try{await device.scheduledBrightness(job.groups,job.percent);window.HyzenLightSchedule.refreshPreview(job.groups.length===1&&job.groups[0]==='front'?['back','front']:job.groups);}
   catch(error){error.lightingSchedule=true;error.retryAfter=Date.now()+60000;throw error;}
  }else if(job.kind==='mode'){
   const keys={axisMode:56,winLock:22,altTabLock:60,altF4Lock:61,lightspeed:62},patch={};for(const field of job.fields)patch[keys[field]]=field==='axisMode'?job.values[field]:field==='lightspeed'?(job.values[field]?0x66:0):(job.values[field]?1:0);

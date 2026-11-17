@@ -1,6 +1,7 @@
 (function(root){
 'use strict';
 const messages={
+ '하단 바 예약':'Front bar schedule','키 조명은 끄고 하단 바만 제어합니다. 창을 닫아도 트레이에서 계속 동작합니다.':'Controls the front bar with key lights off. Continues in the tray when the window is closed.',
  '시간 예약':'Lighting schedule','시간 예약 사용':'Enable lighting schedule','켜지는 시간':'Turn on at','꺼지는 시간':'Turn off at','밤 밝기':'Night brightness','적용 대상':'Apply to',
  'PC 시간 기준 · HUB가 실행 중이고 키보드가 연결돼 있을 때 적용됩니다. 최소화해도 동작합니다.':'Uses the PC clock. Applies while HUB is running and the keyboard is connected, including when minimized.',
  '조명 예약 설정이 올바르지 않습니다.':'Choose different on/off times, a night brightness from 1 to 100, and at least one light.','유효한 시간이 필요합니다.':'A valid time is required.',

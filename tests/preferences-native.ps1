@@ -41,6 +41,13 @@ class Check {
   Require(rejected&&File.ReadAllText(path)==before,"Invalid schedule edits do not modify the preference file");
   rejected=false;try{invalid.SetLightingSchedule(new LightingScheduleSettings(true,"20:00","08:00",30,true,true,false));}catch(IOException){rejected=true;}
   Require(rejected&&!invalid.LightingSchedule.enabled,"Failed schedule saves retain the previous disabled state");
+  var first=new UserPreferences(path);var secondInstance=new UserPreferences(path);
+  first.SetLightingSchedule(new LightingScheduleSettings(true,"22:15","06:30",42,false,true,false));secondInstance.SetLanguage("ko");
+  restored=new UserPreferences(path);Require(restored.LightingSchedule.onTime=="22:15"&&restored.LightingSchedule.brightness==42,"Stale language editor preserves another process's schedule");
+  first.SetKeyboardScale(150);secondInstance.SetLightingSchedule(new LightingScheduleSettings(true,"21:00","07:30",45,false,true,false));
+  restored=new UserPreferences(path);Require(restored.Language=="ko"&&restored.KeyboardScale==150,"Light-only editor preserves latest HUB language and scale");
+  first.Reload();Require(first.LightingSchedule.onTime=="21:00"&&first.Language=="ko","Running HUB reloads companion preferences");
+  Require(!LightingScheduleSettings.Default().back&&LightingScheduleSettings.Default().front&&!LightingScheduleSettings.Default().receiver,"New schedules default to the front bar only");
   Console.WriteLine("{\"nativePreferenceChecks\":"+checks+",\"passed\":true}");
  }
 }

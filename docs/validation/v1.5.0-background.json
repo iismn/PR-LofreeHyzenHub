@@ -1,0 +1,28 @@
+{
+  "installation": {
+    "InstalledVersion": "1.5.0.0",
+    "LightBytes": 121344,
+    "LanguagePreserved": true,
+    "SizePreserved": true,
+    "ScheduleEnabled": true,
+    "FrontBarOnly": true,
+    "OnTime": "20:00",
+    "OffTime": "08:00",
+    "NightBrightness": 50,
+    "StartupRegistered": true,
+    "RunningInBackground": true,
+    "WorkingSetBytes": 44777472
+  },
+  "lifecycle": {
+    "SingleLightInstance": true,
+    "LightGracefulUpdate": true,
+    "HubCloseHidesToTray": true,
+    "HubExplicitExitWorks": true,
+    "LightContinuesWithoutHub": true,
+    "LightHasNoWindow": true,
+    "LightWorkingSetBytes": 44752896,
+    "IdleCpuMillisecondsOver1p8Seconds": 0.0
+  },
+  "windowsPowerShellInstallerPassed": true,
+  "backgroundBrowserModulesLoaded": 0
+}

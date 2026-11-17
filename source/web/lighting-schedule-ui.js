@@ -29,7 +29,7 @@ function synchronizeForm(){
 }
 async function save(){
  let config;
- try{config=HyzenSchedule.validate({enabled:document.getElementById('scheduleEnabled').checked,onTime:document.getElementById('scheduleOn').value,offTime:document.getElementById('scheduleOff').value,brightness:Number(document.getElementById('scheduleBrightness').value),back:document.getElementById('scheduleBack').checked,front:document.getElementById('scheduleFront').checked,receiver:document.getElementById('scheduleReceiver').checked});}
+ try{config=HyzenSchedule.validate({enabled:document.getElementById('scheduleEnabled').checked,onTime:document.getElementById('scheduleOn').value,offTime:document.getElementById('scheduleOff').value,brightness:Number(document.getElementById('scheduleBrightness').value),back:false,front:true,receiver:false});}
  catch(error){showError(error);synchronizeForm();return;}
  await work(async()=>{
   if(live.active)try{await live.active;}catch{}
@@ -63,5 +63,10 @@ function discardFailedApply(){
 }
 document.addEventListener('change',event=>{if(/^schedule(Enabled|On|Off|Brightness|Back|Front|Receiver)$/.test(event.target.id))save();});
 window.addEventListener('focus',()=>tick());
-window.HyzenLightSchedule={tick,accepts:job=>controller.accepts(job),refreshPreview,synchronizeForm,verifyAt,discardFailedApply,get config(){return controller.config;},get pulseCount(){return pulseCount;}};
+function updateNative(value){
+ if(state.busy||state.verifying||document.activeElement?.id?.startsWith('schedule'))return;
+ const config=HyzenSchedule.restore(value);if(JSON.stringify(config)===JSON.stringify(controller.config))return;
+ controller.configure(config);window.HUB_PREFERENCES={...window.HUB_PREFERENCES,lightingSchedule:config};synchronizeForm();
+}
+window.HyzenLightSchedule={tick,updateNative,accepts:job=>controller.accepts(job),refreshPreview,synchronizeForm,verifyAt,discardFailedApply,get config(){return controller.config;},get pulseCount(){return pulseCount;}};
 })();
